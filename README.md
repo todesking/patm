@@ -1,4 +1,4 @@
-# PATM: Pattern MATcher for Ruby
+# PATM: PATtern Matcher for Ruby
 
 ## Usage
 
