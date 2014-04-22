@@ -63,10 +63,15 @@ module Patm
       def execute(mmatch, obj)
         @obj === obj
       end
+
+      def inspect
+        "OBJ(#{@obj.inspect})"
+      end
     end
 
     class Any < self
       def execute(match, obj); true; end
+      def inspect; 'ANY'; end
     end
 
     class Group < self
@@ -92,6 +97,9 @@ module Patm
       def rest?
         @pats.any?(&rest?)
       end
+      def inspect
+        "OR(#{@pats.map(&:inspect).join(',')})"
+      end
     end
 
     class And <self
@@ -105,6 +113,9 @@ module Patm
       end
       def rest?
         @pats.any?(&:rest?)
+      end
+      def inspect
+        "AND(#{@pats.map(&:inspect).join(',')})"
       end
     end
   end
