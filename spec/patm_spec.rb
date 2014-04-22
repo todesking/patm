@@ -8,10 +8,6 @@ module PatmHelper
       actual.execute(Patm::Match.new, expected)
     end
   end
-
-  def pat(p)
-    Patm::Pattern.build_from(p)
-  end
 end
 
 describe Patm do
@@ -29,8 +25,47 @@ describe Patm do
   end
 
   describe '::Pattern' do
-    subject { pat(1) }
-    it { should match_to(1) }
-    it { should_not match_to(2) }
+    def self.pattern(plain, &b)
+      context "pattern '#{plain.inspect}'" do
+        subject { Patm::Pattern.build_from(plain) }
+        instance_eval(&b)
+      end
+    end
+
+    pattern 1 do
+      it { should match_to(1) }
+      it { should_not match_to(2) }
+    end
+
+    pattern [] do
+      it { should match_to [] }
+      it { should_not match_to {} }
+      it { should_not match_to [1] }
+    end
+
+    pattern [1,2] do
+      it { should match_to [1,2] }
+      it { should_not match_to [1] }
+      it { should_not match_to [1, -1] }
+      it { should_not match_to [1,2,3] }
+    end
+
+    pattern Patm::ANY do
+      it { should match_to 1 }
+      it { should match_to ["foo", "bar"] }
+    end
+
+    pattern [1, Patm::ANY, 3] do
+      it { should match_to [1, 2, 3] }
+      it { should match_to [1, 0, 3] }
+      it { should_not match_to [1, 0, 4] }
+    end
+
+    pattern Patm.or(1, 2) do
+      it { should match_to 1 }
+      it { should match_to 2 }
+      it { should_not match_to 3 }
+    end
+
   end
 end
