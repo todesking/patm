@@ -44,6 +44,8 @@ module Patm
         } &&
         (!@rest || @rest.execute(mmatch, obj[@head.size..-(@tail.size+1)]))
       end
+
+      def inspect; [@head + [@rest] + @tail].inspect; end
     end
 
     class ArrRest < self
@@ -83,6 +85,7 @@ module Patm
         mmatch[@index] = obj
         true
       end
+      def inspect; "GROUP(#{@index})"; end
     end
 
     class Or < self

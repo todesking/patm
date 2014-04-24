@@ -1,13 +1,40 @@
 require File.join(File.dirname(__FILE__), '..', 'lib', 'patm.rb')
+require 'pry'
 
 module PatmHelper
   extend RSpec::Matchers::DSL
 
-  matcher :match_to do|expected|
+  matcher :these_matches do|*matches|
     match do|actual|
-      actual.execute(Patm::Match.new, expected)
+      matches.all?{|m| m.matches?(actual) }
     end
   end
+
+  matcher :match_to do|expected|
+    match do|actual|
+      exec(actual, expected)
+    end
+
+    def exec(actual, expected)
+      @match = Patm::Match.new
+      actual.execute(@match, expected)
+    end
+
+    def match; @match; end
+
+    def and_capture(g1, g2 = nil, g3 = nil)
+      these_matches(
+        self, _capture(self, g1, g2, g3)
+      )
+    end
+  end
+
+  matcher :_capture do|m, g1, g2, g3|
+    match do|_|
+      [m.match[1], m.match[2], m.match[3]] == [g1, g2, g3]
+    end
+  end
+
 end
 
 describe Patm do
@@ -67,5 +94,14 @@ describe Patm do
       it { should_not match_to 3 }
     end
 
+    pattern Patm._1 do
+      it { should match_to(1).and_capture(1) }
+      it { should match_to('x').and_capture('x') }
+    end
+
+    pattern [0, Patm._1, Patm._2] do
+      it { should match_to([0, 1, 2]).and_capture(1, 2) }
+      it { should_not match_to(['x', 1, 2]).and_capture(1, 2) }
+    end
   end
 end
