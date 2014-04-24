@@ -45,7 +45,7 @@ module Patm
         (!@rest || @rest.execute(mmatch, obj[@head.size..-(@tail.size+1)]))
       end
 
-      def inspect; [@head + [@rest] + @tail].inspect; end
+      def inspect; (@head + [@rest] + @tail).inspect; end
     end
 
     class ArrRest < self
@@ -55,6 +55,7 @@ module Patm
       def rest?
         true
       end
+      def inspect; "..."; end
     end
 
     class Obj < self

@@ -103,5 +103,16 @@ describe Patm do
       it { should match_to([0, 1, 2]).and_capture(1, 2) }
       it { should_not match_to(['x', 1, 2]).and_capture(1, 2) }
     end
+
+    pattern [0, 1, Patm::ARRAY_REST] do
+      it { should_not match_to([0]) }
+      it { should match_to([0, 1]) }
+      it { should match_to([0, 1, 2, 3]) }
+    end
+
+    pattern [0, 1, Patm::ARRAY_REST & Patm._1] do
+      it { should match_to([0, 1]).and_capture([]) }
+      it { should match_to([0, 1, 2, 3]).and_capture([2, 3]) }
+    end
   end
 end
