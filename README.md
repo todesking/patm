@@ -52,7 +52,7 @@ rule.apply([])
 # With cached rules
 class A
   def initialize
-    @rules = Patm::Cache.new
+    @rules = Patm::RuleCache.new
   end
 
   def match1(obj)

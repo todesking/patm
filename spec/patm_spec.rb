@@ -37,10 +37,8 @@ module PatmHelper
 
 end
 
-describe Patm do
-  include PatmHelper
-
-  it 'should do pattern matching with case-when expression' do
+describe "Usage:" do
+  it 'with case expression' do
     p = Patm
     case [1, 2, 3]
     when m = p.match([1, p._1, p._2])
@@ -51,68 +49,95 @@ describe Patm do
       .should == [2, 3]
   end
 
-  describe '::Pattern' do
-    def self.pattern(plain, &b)
-      context "pattern '#{plain.inspect}'" do
-        subject { Patm::Pattern.build_from(plain) }
-        instance_eval(&b)
+  it 'with predefined Rule' do
+    p = Patm
+    r = p::Rule.new do|r|
+      r.on [1, p._1, p._2] do|m|
+        [m._1, m._2]
       end
+      r.else {|obj| [] }
     end
+    r.apply([1, 2, 3]).should == [2, 3]
+  end
 
-    pattern 1 do
-      it { should match_to(1) }
-      it { should_not match_to(2) }
-    end
+  it 'with RuleCache' do
+    p = Patm
+    rs = p::RuleCache.new
 
-    pattern [] do
-      it { should match_to [] }
-      it { should_not match_to {} }
-      it { should_not match_to [1] }
+    rs.match(:pattern_1, [1, 2, 3]) do|r|
+      r.on [1, p._1, p._2] do|m|
+        [m._1, m._2]
+      end
+      r.else {|obj| [] }
     end
+      .should == [2, 3]
 
-    pattern [1,2] do
-      it { should match_to [1,2] }
-      it { should_not match_to [1] }
-      it { should_not match_to [1, -1] }
-      it { should_not match_to [1,2,3] }
-    end
+    rs.match(:pattern_1, [1, 3, 5]) {|r| fail "should not reach here" }.should == [3, 5]
+  end
+end
 
-    pattern Patm::ANY do
-      it { should match_to 1 }
-      it { should match_to ["foo", "bar"] }
+describe Patm::Pattern do
+  include PatmHelper
+  def self.pattern(plain, &b)
+    context "pattern '#{plain.inspect}'" do
+      subject { Patm::Pattern.build_from(plain) }
+      instance_eval(&b)
     end
+  end
 
-    pattern [1, Patm::ANY, 3] do
-      it { should match_to [1, 2, 3] }
-      it { should match_to [1, 0, 3] }
-      it { should_not match_to [1, 0, 4] }
-    end
+  pattern 1 do
+    it { should match_to(1) }
+    it { should_not match_to(2) }
+  end
 
-    pattern Patm.or(1, 2) do
-      it { should match_to 1 }
-      it { should match_to 2 }
-      it { should_not match_to 3 }
-    end
+  pattern [] do
+    it { should match_to [] }
+    it { should_not match_to {} }
+    it { should_not match_to [1] }
+  end
 
-    pattern Patm._1 do
-      it { should match_to(1).and_capture(1) }
-      it { should match_to('x').and_capture('x') }
-    end
+  pattern [1,2] do
+    it { should match_to [1,2] }
+    it { should_not match_to [1] }
+    it { should_not match_to [1, -1] }
+    it { should_not match_to [1,2,3] }
+  end
 
-    pattern [0, Patm._1, Patm._2] do
-      it { should match_to([0, 1, 2]).and_capture(1, 2) }
-      it { should_not match_to(['x', 1, 2]).and_capture(1, 2) }
-    end
+  pattern Patm::ANY do
+    it { should match_to 1 }
+    it { should match_to ["foo", "bar"] }
+  end
 
-    pattern [0, 1, Patm::ARRAY_REST] do
-      it { should_not match_to([0]) }
-      it { should match_to([0, 1]) }
-      it { should match_to([0, 1, 2, 3]) }
-    end
+  pattern [1, Patm::ANY, 3] do
+    it { should match_to [1, 2, 3] }
+    it { should match_to [1, 0, 3] }
+    it { should_not match_to [1, 0, 4] }
+  end
 
-    pattern [0, 1, Patm::ARRAY_REST & Patm._1] do
-      it { should match_to([0, 1]).and_capture([]) }
-      it { should match_to([0, 1, 2, 3]).and_capture([2, 3]) }
-    end
+  pattern Patm.or(1, 2) do
+    it { should match_to 1 }
+    it { should match_to 2 }
+    it { should_not match_to 3 }
+  end
+
+  pattern Patm._1 do
+    it { should match_to(1).and_capture(1) }
+    it { should match_to('x').and_capture('x') }
+  end
+
+  pattern [0, Patm._1, Patm._2] do
+    it { should match_to([0, 1, 2]).and_capture(1, 2) }
+    it { should_not match_to(['x', 1, 2]).and_capture(1, 2) }
+  end
+
+  pattern [0, 1, Patm::ARRAY_REST] do
+    it { should_not match_to([0]) }
+    it { should match_to([0, 1]) }
+    it { should match_to([0, 1, 2, 3]) }
+  end
+
+  pattern [0, 1, Patm::ARRAY_REST & Patm._1] do
+    it { should match_to([0, 1]).and_capture([]) }
+    it { should match_to([0, 1, 2, 3]).and_capture([2, 3]) }
   end
 end
