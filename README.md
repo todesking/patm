@@ -3,7 +3,7 @@
 ## Usage
 
 ```ruby
-# With case
+# With case(simple but slow)
 def match(obj)
   p = Patm
   _xs = Patm::ARRAY_REST
@@ -61,14 +61,15 @@ class A
       r.on [:x, p._1, p._2] do|m|
         [m._1, m._2]
       end
-   end
-
-   def match2(obj)
-     @rules.match(:match2, obj) do|r|
-       # ...
-     end
+    end
   end
- end
+
+  def match2(obj)
+    @rules.match(:match2, obj) do|r|
+      # ...
+    end
+  end
+end
  ```
 
 
