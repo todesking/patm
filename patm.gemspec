@@ -3,7 +3,9 @@ Gem::Specification.new do |s|
   s.name        = 'patm'
   s.version     = '0.0.1'
   s.summary     = 'PATtern Matching library'
+  s.description = 'Pattern matching library for plain data structure'
   s.required_ruby_version = '>= 1.9.0'
+  s.license     = 'MIT'
 
   s.author            = 'todesking'
   s.email             = 'discommucative@gmail.com'
@@ -14,6 +16,6 @@ Gem::Specification.new do |s|
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   s.require_paths = ["lib"]
 
-  s.add_development_dependency('rspec')
-  s.add_development_dependency('pry')
+  s.add_development_dependency('rspec', '~>2.14')
+  s.add_development_dependency('pry', '~>0.9')
 end
