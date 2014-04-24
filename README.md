@@ -3,6 +3,10 @@
 ## Usage
 
 ```ruby
+require 'patm'
+```
+
+```ruby
 # With case(simple but slow)
 def match(obj)
   p = Patm
