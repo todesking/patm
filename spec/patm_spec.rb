@@ -148,4 +148,10 @@ describe Patm::Pattern do
     it { should match_to([0, 1]).and_capture([]) }
     it { should match_to([0, 1, 2, 3]).and_capture([2, 3]) }
   end
+
+  pattern [0, 1, Patm::ARRAY_REST, 2, 3] do
+    it { should match_to(0,1,2,3) }
+    it { should match_to(0,1,10,20,30,2,3) }
+    it { should_not match_to(0,1,3) }
+  end
 end
