@@ -46,13 +46,16 @@ module Patm
         @desc = desc
         @context = context
         singleton_class = class <<self; self; end
-        singleton_class.class_eval <<-RUBY
+        @src = <<-RUBY
         def execute(_match, _obj)
           _ctx = @context
-          #{src}
+#{src}
         end
         RUBY
+        singleton_class.class_eval(@src)
       end
+
+      attr_reader :src
 
       def compile_internal(free_index)
         raise "Already compiled"
