@@ -129,6 +129,10 @@ describe Patm::Pattern do
     it { should match_to('x').and_capture('x') }
   end
 
+  pattern Patm._1 & Patm._2 do
+    it { should match_to(1).and_capture(1, 1) }
+  end
+
   pattern [0, Patm._1, Patm._2] do
     it { should match_to([0, 1, 2]).and_capture(1, 2) }
     it { should_not match_to(['x', 1, 2]).and_capture(1, 2) }
