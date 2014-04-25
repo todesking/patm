@@ -57,7 +57,7 @@ module Patm
       def compile_internal(free_index)
         raise "Already compiled"
       end
-      def inspect; "<compiled>#{desc}"; end
+      def inspect; "<compiled>#{@desc}"; end
     end
 
     class Arr < self
@@ -146,6 +146,22 @@ module Patm
       end
       def inspect
         "OR(#{@pats.map(&:inspect).join(',')})"
+      end
+      def compile_internal(free_index)
+        srcs = []
+        i = free_index
+        ctxs = []
+        @pats.each do|pat|
+          s, c, i = pat.compile_internal(i)
+          srcs << s
+          ctxs << c
+        end
+
+        [
+          srcs.map{|s| "(#{s})" }.join(" ||\n"),
+          ctxs.flatten(1),
+          i
+        ]
       end
     end
 
