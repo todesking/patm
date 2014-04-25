@@ -135,20 +135,10 @@ module Patm
       def inspect; "GROUP(#{@index})"; end
     end
 
-    class Or < self
-      def initialize(pats)
+    class LogicalOp < self
+      def initialize(pats, op_str)
         @pats = pats
-      end
-      def execute(mmatch, obj)
-        @pats.any? do|pat|
-          pat.execute(mmatch, obj)
-        end
-      end
-      def rest?
-        @pats.any?(&rest?)
-      end
-      def inspect
-        "OR(#{@pats.map(&:inspect).join(',')})"
+        @op_str = op_str
       end
       def compile_internal(free_index)
         srcs = []
@@ -161,16 +151,33 @@ module Patm
         end
 
         [
-          srcs.map{|s| "(#{s})" }.join(" ||\n"),
+          srcs.map{|s| "(#{s})" }.join(" #{@op_str}\n"),
           ctxs.flatten(1),
           i
         ]
       end
     end
 
-    class And <self
+    class Or < LogicalOp
       def initialize(pats)
-        @pats = pats
+        super(pats, '||')
+      end
+      def execute(mmatch, obj)
+        @pats.any? do|pat|
+          pat.execute(mmatch, obj)
+        end
+      end
+      def rest?
+        @pats.any?(&rest?)
+      end
+      def inspect
+        "OR(#{@pats.map(&:inspect).join(',')})"
+      end
+    end
+
+    class And < LogicalOp
+      def initialize(pats)
+        super(pats, '&&')
       end
       def execute(mmatch, obj)
         @pats.all? do|pat|
