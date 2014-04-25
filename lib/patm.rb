@@ -105,6 +105,14 @@ module Patm
       def inspect
         "OBJ(#{@obj.inspect})"
       end
+
+      def compile_internal(free_index)
+        [
+          "_ctx[#{free_index}] === _obj",
+          [@obj],
+          free_index + 1,
+        ]
+      end
     end
 
     class Any < self
