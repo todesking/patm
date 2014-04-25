@@ -25,6 +25,41 @@ module Patm
       And.new([self, rhs])
     end
 
+    def compile
+      src, context, _ = self.compile_internal(0)
+
+      Compiled.new(self.inspect, src, context)
+    end
+
+    # free_index:Numeric -> [src, context, free_index]
+    # variables: _ctx, _match, _obj
+    def compile_internal(free_index)
+      [
+        "_ctx[#{free_index}].execute(_match, _obj)",
+        [self],
+        free_index + 1
+      ]
+    end
+
+    class Compiled < self
+      def initialize(desc, src, context)
+        @desc = desc
+        @context = context
+        singleton_class = class <<self; self; end
+        singleton_class.class_eval <<-RUBY
+        def execute(_match, _obj)
+          _ctx = @context
+          #{src}
+        end
+        RUBY
+      end
+
+      def compile_internal(free_index)
+        raise "Already compiled"
+      end
+      def inspect; "<compiled>#{desc}"; end
+    end
+
     class Arr < self
       def initialize(head, rest = nil, tail = [])
         @head = head

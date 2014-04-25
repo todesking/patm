@@ -83,6 +83,10 @@ describe Patm::Pattern do
       subject { Patm::Pattern.build_from(plain) }
       instance_eval(&b)
     end
+    context "pattern '#{plain.inspect}'(Compiled)" do
+      subject { Patm::Pattern.build_from(plain).compile }
+      instance_eval(&b)
+    end
   end
 
   pattern 1 do
