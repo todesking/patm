@@ -33,9 +33,9 @@ module Patm
 
     # free_index:Numeric -> [src, context, free_index]
     # variables: _ctx, _match, _obj
-    def compile_internal(free_index)
+    def compile_internal(free_index, target_name = "_obj")
       [
-        "_ctx[#{free_index}].execute(_match, _obj)",
+        "_ctx[#{free_index}].execute(_match, #{target_name})",
         [self],
         free_index + 1
       ]
@@ -57,7 +57,7 @@ module Patm
 
       attr_reader :src
 
-      def compile_internal(free_index)
+      def compile_internal(free_index, target_name = "_obj")
         raise "Already compiled"
       end
       def inspect; "<compiled>#{@desc}"; end
@@ -84,6 +84,48 @@ module Patm
       end
 
       def inspect; (@head + [@rest] + @tail).inspect; end
+
+      def compile_internal(free_index, target_name = "_obj")
+        i = 0
+        srcs = []
+        ctxs = []
+
+        srcs << "#{target_name}.is_a?(::Array)"
+
+        size_min = @head.size + @tail.size
+        if @rest
+          srcs << "#{target_name}.size >= #{size_min}"
+        else
+          srcs << "#{target_name}.size == #{size_min}"
+        end
+
+        elm_target_name = "#{target_name}_elm"
+        @head.each_with_index do|h, hi|
+          s, c, i = h.compile_internal(i, elm_target_name)
+          srcs << "(#{elm_target_name} = #{target_name}[#{hi}]; #{s})"
+          ctxs << c
+        end
+
+        srcs << "(#{target_name}_t = #{target_name}[(-#{@tail.size})..-1]; true)"
+        @tail.each_with_index do|t, ti|
+          s, c, i = t.compile_internal(i, elm_target_name)
+          srcs << "(#{elm_target_name} = #{target_name}_t[#{ti}]; #{s})"
+          ctxs << c
+        end
+
+        if @rest
+          tname = "#{target_name}_r"
+          s, c, i = @rest.compile_internal(i, tname)
+          srcs << "(#{tname} = #{target_name}[#{@head.size}..-(#{@tail.size+1})];#{s})"
+          ctxs << c
+        end
+
+        [
+          srcs.map{|s| "(#{s})"}.join(" &&\n"),
+          ctxs.flatten(1),
+          i
+        ]
+      end
     end
 
     class ArrRest < self
@@ -109,9 +151,9 @@ module Patm
         "OBJ(#{@obj.inspect})"
       end
 
-      def compile_internal(free_index)
+      def compile_internal(free_index, target_name = "_obj")
         [
-          "_ctx[#{free_index}] === _obj",
+          "_ctx[#{free_index}] === #{target_name}",
           [@obj],
           free_index + 1,
         ]
@@ -140,12 +182,12 @@ module Patm
         @pats = pats
         @op_str = op_str
       end
-      def compile_internal(free_index)
+      def compile_internal(free_index, target_name = "_obj")
         srcs = []
         i = free_index
         ctxs = []
         @pats.each do|pat|
-          s, c, i = pat.compile_internal(i)
+          s, c, i = pat.compile_internal(i, target_name)
           srcs << s
           ctxs << c
         end
