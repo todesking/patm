@@ -51,7 +51,7 @@ describe "Usage:" do
 
   it 'with predefined Rule' do
     p = Patm
-    r = p::Rule.new do|r|
+    r = p::Rule.new(false) do|r|
       r.on [1, p._1, p._2] do|m|
         [m._1, m._2]
       end
