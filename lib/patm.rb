@@ -276,18 +276,27 @@ module Patm
   ARRAY_REST = Pattern::ArrRest.new
 
   class Rule
-    def initialize(&block)
+    def initialize(compile = false, &block)
+      @compile = compile
       # { Pattern => Proc }
       @rules = []
       block[self]
     end
 
     def on(pat, &block)
-      @rules << [Pattern.build_from(pat), block]
+      if @compile
+        @rules << [Pattern.build_from(pat).compile, block]
+      else
+        @rules << [Pattern.build_from(pat), block]
+      end
     end
 
     def else(&block)
-      @rules << [ANY, lambda {|m,o| block[o] }]
+      if @compile
+        @rules << [ANY.compile, lambda {|m,o| block[o] }]
+      else
+        @rules << [ANY, lambda {|m,o| block[o] }]
+      end
     end
 
     def apply(obj)
@@ -302,11 +311,12 @@ module Patm
   end
 
   class RuleCache
-    def initialize
+    def initialize(compile = false)
+      @compile = compile
       @rules = {}
     end
     def match(rule_name, obj, &rule)
-      (@rules[rule_name] ||= ::Patm::Rule.new(&rule)).apply(obj)
+      (@rules[rule_name] ||= ::Patm::Rule.new(@compile, &rule)).apply(obj)
     end
   end
 

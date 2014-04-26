@@ -60,9 +60,35 @@ describe "Usage:" do
     r.apply([1, 2, 3]).should == [2, 3]
   end
 
+  it 'with predefined Rule(compiled)' do
+    p = Patm
+    r = p::Rule.new(true) do|r|
+      r.on [1, p._1, p._2] do|m|
+        [m._1, m._2]
+      end
+      r.else {|obj| [] }
+    end
+    r.apply([1, 2, 3]).should == [2, 3]
+  end
+
   it 'with RuleCache' do
     p = Patm
     rs = p::RuleCache.new
+
+    rs.match(:pattern_1, [1, 2, 3]) do|r|
+      r.on [1, p._1, p._2] do|m|
+        [m._1, m._2]
+      end
+      r.else {|obj| [] }
+    end
+      .should == [2, 3]
+
+    rs.match(:pattern_1, [1, 3, 5]) {|r| fail "should not reach here" }.should == [3, 5]
+  end
+
+  it 'with RuleCache(compiled)' do
+    p = Patm
+    rs = p::RuleCache.new(true)
 
     rs.match(:pattern_1, [1, 2, 3]) do|r|
       r.on [1, p._1, p._2] do|m|
