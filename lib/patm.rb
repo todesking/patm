@@ -291,7 +291,7 @@ module Patm
   end
 
   class Rule
-    def initialize(compile = false, &block)
+    def initialize(compile = true, &block)
       @compile = compile
       # { Pattern => Proc }
       @rules = []
@@ -326,7 +326,7 @@ module Patm
   end
 
   class RuleCache
-    def initialize(compile = false)
+    def initialize(compile = true)
       @compile = compile
       @rules = {}
     end
