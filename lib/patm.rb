@@ -204,6 +204,13 @@ module Patm
         true
       end
       def inspect; "GROUP(#{@index})"; end
+      def compile_internal(free_index, target_name = "_obj")
+        [
+          "_match[#{@index}] = #{target_name}",
+          [],
+          free_index
+        ]
+      end
     end
 
     class LogicalOp < self
