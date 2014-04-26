@@ -22,16 +22,16 @@ module PatmHelper
 
     def match; @match; end
 
-    def and_capture(g1, g2 = nil, g3 = nil)
+    def and_capture(g1, g2 = nil, g3 = nil, g4 = nil)
       these_matches(
-        self, _capture(self, g1, g2, g3)
+        self, _capture(self, g1, g2, g3, g4)
       )
     end
   end
 
-  matcher :_capture do|m, g1, g2, g3|
+  matcher :_capture do|m, g1, g2, g3, g4|
     match do|_|
-      [m.match[1], m.match[2], m.match[3]] == [g1, g2, g3]
+      [m.match[1], m.match[2], m.match[3], m.match[4]] == [g1, g2, g3, g4]
     end
   end
 
@@ -179,5 +179,16 @@ describe Patm::Pattern do
     it { should match_to([0,1,2]) }
     it { should match_to([0,1,10,20,30,2]) }
     it { should_not match_to([0,1]) }
+  end
+
+  pattern [0, [1, 2]] do
+    it { should match_to [0, [1, 2]] }
+    it { should_not match_to [0, [1, 3]] }
+  end
+
+  context 'regression' do
+    pattern [:assign, [:var_field, [:@ident, Patm._1, [Patm._2, Patm._3]]], Patm._4] do
+      it { should match_to([:assign, [:var_field, [:@ident, 10, [20, 30]]], false]).and_capture(10, 20, 30, false) }
+    end
   end
 end

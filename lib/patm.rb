@@ -101,7 +101,7 @@ module Patm
       end
 
       def compile_internal(free_index, target_name = "_obj")
-        i = 0
+        i = free_index
         srcs = []
         ctxs = []
 
@@ -206,7 +206,7 @@ module Patm
       def inspect; "GROUP(#{@index})"; end
       def compile_internal(free_index, target_name = "_obj")
         [
-          "_match[#{@index}] = #{target_name}",
+          "_match[#{@index}] = #{target_name}; true",
           [],
           free_index
         ]
