@@ -54,9 +54,14 @@ end
 end
 
 @rule = P::Rule.new(&@ruledef)
+@compiled_rule = P::Rule.new(true, &@ruledef)
 
 def match_with_rule(obj)
   @rule.apply(obj)
+end
+
+def match_with_compiled_rule(obj)
+  @compiled_rule.apply(obj)
 end
 
 
@@ -75,14 +80,15 @@ def bm(&b)
   10000.times do
     VALUES.each do|obj, expected|
       actual = b.call obj
-      raise unless actual == expected
+      raise "e:#{expected.inspect} a:#{actual.inspect}" unless actual == expected
     end
   end
 end
 
-Benchmark.bm(10) do|b|
+Benchmark.bm(15) do|b|
   b.report("case-when") { bm {|obj| match_with_case(obj) } }
   b.report("rule") { bm {|obj| match_with_rule(obj) } }
+  b.report("compiled-rule") { bm {|obj| match_with_compiled_rule(obj) } }
 end
 
 
