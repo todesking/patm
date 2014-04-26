@@ -379,16 +379,4 @@ module Patm
   def self.match(plain_pat)
     CaseBinder.new Pattern.build_from(plain_pat)
   end
-
-  def self.match_array(head, rest_spat = nil, tail = [])
-    # TODO: deprecated
-    Match.new(
-      Pattern::Arr.new(
-        head.map{|e| Pattern.build_from(e)},
-        rest_spat,
-        tail.map{|e| Pattern.build_from(e)}
-      )
-    )
-  end
-
 end
