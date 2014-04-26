@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.name        = 'patm'
-  s.version     = '0.0.1'
+  s.version     = '0.1.0'
   s.summary     = 'PATtern Matching library'
   s.description = 'Pattern matching library for plain data structure'
   s.required_ruby_version = '>= 1.9.0'

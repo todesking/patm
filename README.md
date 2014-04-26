@@ -79,6 +79,11 @@ end
 
 ## Changes
 
+### 0.1.0
+
+- Faster matching with pattern compilation
+- Fix StackOverflow bug for `[Patm.or()]`
+
 ### 0.0.1
 
 - Initial release
