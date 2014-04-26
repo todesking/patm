@@ -271,9 +271,29 @@ module Patm
     end
   end
 
-  ANY = Pattern::Any.new
   GROUP = 100.times.map{|i| Pattern::Group.new(i) }
+  ANY = Pattern::Any.new
   ARRAY_REST = Pattern::ArrRest.new
+
+  def self.or(*pats)
+    Pattern::Or.new(pats.map{|p| Pattern.build_from(p) })
+  end
+
+  def self._any
+    ANY
+  end
+
+  def self._xs
+    ARRAY_REST
+  end
+
+  class <<self
+    GROUP.each do|g|
+      define_method "_#{g.index}" do
+        g
+      end
+    end
+  end
 
   class Rule
     def initialize(compile = false, &block)
@@ -373,15 +393,4 @@ module Patm
     )
   end
 
-  def self.or(*pats)
-    Pattern::Or.new(pats.map{|p| Pattern.build_from(p) })
-  end
-
-  class <<self
-    GROUP.each do|g|
-      define_method "_#{g.index}" do
-        g
-      end
-    end
-  end
 end
