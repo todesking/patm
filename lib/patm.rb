@@ -1,33 +1,30 @@
 module Patm
   class Pattern
-    def execute(match, obj); true; end
-
-    def rest?
-      false
-    end
 
     def self.build_from(plain)
       case plain
       when Pattern
         plain
       when Array
-        build_from_array(plain)
+        array = plain.map{|a| build_from(a)}
+        rest_index = array.index(&:rest?)
+        if rest_index
+          head = array[0...rest_index]
+          rest = array[rest_index]
+          tail = array[(rest_index+1)..-1]
+          Arr.new(head, rest, tail)
+        else
+          Arr.new(array)
+        end
       else
         Obj.new(plain)
       end
     end
 
-    def self.build_from_array(array)
-      array = array.map{|a| build_from(a)}
-      rest_index = array.index(&:rest?)
-      if rest_index
-        head = array[0...rest_index]
-        rest = array[rest_index]
-        tail = array[(rest_index+1)..-1]
-        Arr.new(head, rest, tail)
-      else
-        Arr.new(array)
-      end
+    def execute(match, obj); true; end
+
+    def rest?
+      false
     end
 
     def &(rhs)
