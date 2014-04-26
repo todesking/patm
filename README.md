@@ -125,7 +125,7 @@ Note: More than one `_xs` in same array is invalid.
 
 ## Changes
 
-### x.x.x
+### 1.0.0
 
 - DSL
 - Compile is enabled by default
