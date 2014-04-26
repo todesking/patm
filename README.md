@@ -99,6 +99,12 @@ A.new.match1([:x, 1, 2])
 
 ## Changes
 
+### x.x.x
+
+- DSL
+- Compile is enabled by default
+- Change interface
+
 ### 0.1.0
 
 - Faster matching with pattern compilation
