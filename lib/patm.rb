@@ -151,6 +151,13 @@ module Patm
         true
       end
       def inspect; "..."; end
+      def compile_internal(free_index, target_name = "_obj")
+        [
+          "true",
+          [],
+          free_index
+        ]
+      end
     end
 
     class Obj < self
@@ -178,6 +185,13 @@ module Patm
     class Any < self
       def execute(match, obj); true; end
       def inspect; 'ANY'; end
+      def compile_internal(free_index, target_name = "_obj")
+        [
+          "true",
+          [],
+          free_index
+        ]
+      end
     end
 
     class Group < self
