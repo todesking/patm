@@ -98,7 +98,30 @@ end
 
 A.new.match1([:x, 1, 2])
 # => [1, 2]
- ```
+```
+
+## Patterns
+
+### `1`, `:x`, String, ...
+
+Normal pattern matches if `pattern === value` is true.
+
+### Array
+
+`[1, 2, _xs]` matches `[1, 2]`, `[1, 2, 3]`, `[1, 2, 3, 4]`, etc.
+`[1, _xs, 2]` matches `[1, 2]`, `[1, 10, 2]`, etc.
+
+Note: More than one `_xs` in same array is invalid.
+
+### Capture
+
+`_1`, `_2`, etc matches any value, and capture the value as correspond match group.
+
+### Compose
+
+`_1&[_any, _any]` matches any two element array, and capture the array as _1.
+`Patm.or(1, 2)` matches 1 or 2.
+
 
 ## Changes
 
