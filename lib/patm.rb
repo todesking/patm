@@ -322,7 +322,7 @@ module Patm
           return block.call(match, _self)
         end
       end
-      @else[obj]
+      @else[obj, _self]
     end
   end
 
