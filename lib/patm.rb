@@ -11,13 +11,22 @@ module Patm
       when Pattern
         plain
       when Array
-        if plain.last.is_a?(Pattern) && plain.last.rest?
-          Arr.new(plain[0..-2].map{|p| build_from(p) }, plain.last)
-        else
-          Arr.new(plain.map{|p| build_from(p) })
-        end
+        build_from_array(plain)
       else
         Obj.new(plain)
+      end
+    end
+
+    def self.build_from_array(array)
+      array = array.map{|a| build_from(a)}
+      rest_index = array.index(&:rest?)
+      if rest_index
+        head = array[0...rest_index]
+        rest = array[rest_index]
+        tail = array[(rest_index+1)..-1]
+        Arr.new(head, rest, tail)
+      else
+        Arr.new(array)
       end
     end
 
@@ -83,7 +92,13 @@ module Patm
         (!@rest || @rest.execute(mmatch, obj[@head.size..-(@tail.size+1)]))
       end
 
-      def inspect; (@head + [@rest] + @tail).inspect; end
+      def inspect
+        if @rest
+          (@head + [@rest] + @tail).inspect
+        else
+          (@head + @tail).inspect
+        end
+      end
 
       def compile_internal(free_index, target_name = "_obj")
         i = 0
@@ -317,6 +332,7 @@ module Patm
   end
 
   def self.match_array(head, rest_spat = nil, tail = [])
+    # TODO: deprecated
     Match.new(
       Pattern::Arr.new(
         head.map{|e| Pattern.build_from(e)},
