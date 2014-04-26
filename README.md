@@ -30,6 +30,30 @@ match([])
 ```
 
 ```ruby
+# With DSL
+class A
+  extend ::Patm::DSL
+
+  define_matcher :match1 do|r|
+    p = Patm
+    r.on [:x, p._1, p._2] do|m|
+      [m._1, m._2]
+    end
+  end
+
+  define_matcher :match2 do|r|
+    r.on [:a, Patm._xs & Patm._1] do|m, _self|
+      _self.match1(m._1)
+    end
+    # ...
+  end
+end
+
+A.new.match1([:x, 1, 2])
+# => [1, 2]
+```
+
+```ruby
 # With pre-built Rule
 rule = Patm::Rule.new do|r|
   p = Patm
@@ -75,30 +99,6 @@ class A
   end
 end
  ```
-
-```ruby
-# With DSL
-class A
-  extend ::Patm::DSL
-
-  define_matcher :match1 do|r|
-    p = Patm
-    r.on [:x, p._1, p._2] do|m|
-      [m._1, m._2]
-    end
-  end
-
-  define_matcher :match2 do|r|
-    r.on [:a, Patm._xs & Patm._1] do|m, _self|
-      _self.match1(m._1)
-    end
-    # ...
-  end
-end
-
-A.new.match1([:x, 1, 2])
-# => [1, 2]
-```
 
 ## Patterns
 
