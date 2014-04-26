@@ -272,19 +272,17 @@ module Patm
   end
 
   GROUP = 100.times.map{|i| Pattern::Group.new(i) }
-  ANY = Pattern::Any.new
-  ARRAY_REST = Pattern::ArrRest.new
 
   def self.or(*pats)
     Pattern::Or.new(pats.map{|p| Pattern.build_from(p) })
   end
 
   def self._any
-    ANY
+    @any ||= Pattern::Any.new
   end
 
   def self._xs
-    ARRAY_REST
+    @xs = Pattern::ArrRest.new
   end
 
   class <<self
@@ -313,9 +311,9 @@ module Patm
 
     def else(&block)
       if @compile
-        @rules << [ANY.compile, lambda {|m,o| block[o] }]
+        @rules << [::Patm._any.compile, lambda {|m,o| block[o] }]
       else
-        @rules << [ANY, lambda {|m,o| block[o] }]
+        @rules << [::Patm._any, lambda {|m,o| block[o] }]
       end
     end
 
