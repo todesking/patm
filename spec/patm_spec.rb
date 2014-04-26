@@ -190,5 +190,9 @@ describe Patm::Pattern do
     pattern [:assign, [:var_field, [:@ident, Patm._1, [Patm._2, Patm._3]]], Patm._4] do
       it { should match_to([:assign, [:var_field, [:@ident, 10, [20, 30]]], false]).and_capture(10, 20, 30, false) }
     end
+    pattern [Patm.or(1, 2)] do
+      it { should match_to [1] }
+      it { should match_to [2] }
+    end
   end
 end

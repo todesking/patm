@@ -246,7 +246,7 @@ module Patm
         end
       end
       def rest?
-        @pats.any?(&rest?)
+        @pats.any?(&:rest?)
       end
       def inspect
         "OR(#{@pats.map(&:inspect).join(',')})"
