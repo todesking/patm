@@ -92,6 +92,9 @@ module Patm
             obj.has_key?(k) && pat.execute(match, obj[k])
           }
       end
+      def compile_internal(free_index, target_name = "_obj")
+        super # TODO
+      end
     end
 
     class Arr < self
