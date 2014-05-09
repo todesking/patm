@@ -5,7 +5,7 @@ module Patm
       case plain
       when Pattern
         plain
-      when Array
+      when ::Array
         array = plain.map{|a| build_from(a)}
         rest_index = array.index(&:rest?)
         if rest_index
@@ -16,6 +16,12 @@ module Patm
         else
           Arr.new(array)
         end
+      when ::Hash
+        Hash.new(
+          plain.each_with_object({}) do|(k, v), h|
+            h[k] = build_from(v)
+          end
+        )
       else
         Obj.new(plain)
       end
@@ -71,6 +77,18 @@ module Patm
         raise "Already compiled"
       end
       def inspect; "<compiled>#{@desc}"; end
+    end
+
+    class Hash < self
+      def initialize(h)
+        @h = h
+      end
+      def execute(match, obj)
+        return false unless obj.is_a?(::Hash)
+        @h.all? {|k, pat|
+          obj.has_key?(k) && pat.execute(match, obj[k])
+        }
+      end
     end
 
     class Arr < self
@@ -201,6 +219,7 @@ module Patm
         @name = name
       end
       attr_reader :name
+      alias index name # compatibility
       def execute(match, obj)
         match[@name] = obj
         true

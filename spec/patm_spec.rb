@@ -227,6 +227,15 @@ describe Patm::Pattern do
     it { should match_to("aaa").and_named_capture(:x => "aaa") }
   end
 
+  pattern(a: Patm._any[1]) do
+    it { should_not match_to {} }
+    it { should match_to(a: 1).and_capture(1) }
+    it { should match_to(a: 1, b: 2).and_capture(1) }
+  end
+
+  # TODO: {..., Patm.exact: true}
+  # TODO: {a: Patm.opt}
+
   context 'regression' do
     pattern [:assign, [:var_field, [:@ident, Patm._1, [Patm._2, Patm._3]]], Patm._4] do
       it { should match_to([:assign, [:var_field, [:@ident, 10, [20, 30]]], false]).and_capture(10, 20, 30, false) }
