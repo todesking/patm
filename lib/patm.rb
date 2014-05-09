@@ -191,19 +191,21 @@ module Patm
       end
     end
 
-    class Group < self
-      def initialize(index)
-        @index = index
+    class Named < self
+      def initialize(name)
+        raise ::ArgumentError unless name.is_a?(Symbol) || name.is_a?(Numeric)
+        @name = name
       end
-      attr_reader :index
-      def execute(mmatch, obj)
-        mmatch[@index] = obj
+      attr_reader :name
+      alias index name # compatibility
+      def execute(match, obj)
+        match[@name] = obj
         true
       end
-      def inspect; "GROUP(#{@index})"; end
+      def inspect; "NAMED(#{@name})"; end
       def compile_internal(free_index, target_name = "_obj")
         [
-          "_match[#{@index}] = #{target_name}; true",
+          "_match[#{@name.inspect}] = #{target_name}; true",
           [],
           free_index
         ]
@@ -268,7 +270,7 @@ module Patm
     end
   end
 
-  GROUP = 100.times.map{|i| Pattern::Group.new(i) }
+  GROUP = 100.times.map{|i| Pattern::Named.new(i) }
 
   def self.or(*pats)
     Pattern::Or.new(pats.map{|p| Pattern.build_from(p) })
