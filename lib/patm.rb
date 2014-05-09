@@ -201,7 +201,6 @@ module Patm
         @name = name
       end
       attr_reader :name
-      alias index name # compatibility
       def execute(match, obj)
         match[@name] = obj
         true
@@ -274,8 +273,6 @@ module Patm
     end
   end
 
-  GROUP = 100.times.map{|i| Pattern::Named.new(i) }
-
   def self.or(*pats)
     Pattern::Or.new(pats.map{|p| Pattern.build_from(p) })
   end
@@ -288,10 +285,12 @@ module Patm
     @xs = Pattern::ArrRest.new
   end
 
+  PREDEF_GROUP_SIZE = 100
+
   class <<self
-    GROUP.each do|g|
-      define_method "_#{g.index}" do
-        g
+    PREDEF_GROUP_SIZE.times do|i|
+      define_method "_#{i}" do
+        Pattern::Named.new(i)
       end
     end
   end
@@ -355,9 +354,9 @@ module Patm
       @group[i] = val
     end
 
-    Patm::GROUP.each do|g|
-      define_method "_#{g.index}" do
-        self[g.index]
+    PREDEF_GROUP_SIZE.times.each do|i|
+      define_method "_#{i}" do
+        self[i]
       end
     end
   end
@@ -373,9 +372,9 @@ module Patm
     end
 
     def [](i); @match[i]; end
-    Patm::GROUP.each do|g|
-      define_method "_#{g.index}" do
-        @match[g.index]
+    PREDEF_GROUP_SIZE.times do|i|
+      define_method "_#{i}" do
+        @match[i]
       end
     end
   end
