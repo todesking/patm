@@ -31,6 +31,10 @@ module Patm
       And.new([self, rhs])
     end
 
+    def [](name)
+      self & Named.new(name)
+    end
+
     def compile
       src, context, _ = self.compile_internal(0)
 

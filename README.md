@@ -125,6 +125,10 @@ Note: More than one `_xs` in same array is invalid.
 
 ## Changes
 
+### 2.0.0(Unreleased)
+
+- Named capture
+
 ### 1.0.0
 
 - DSL

@@ -24,14 +24,20 @@ module PatmHelper
 
     def and_capture(g1, g2 = nil, g3 = nil, g4 = nil)
       these_matches(
-        self, _capture(self, g1, g2, g3, g4)
+        self, _capture(self, {1 => g1, 2 => g2, 3 => g3, 4 => g4})
+      )
+    end
+
+    def and_named_capture(capture)
+      these_matches(
+        self, _capture(self, capture)
       )
     end
   end
 
-  matcher :_capture do|m, g1, g2, g3, g4|
+  matcher :_capture do|m, capture|
     match do|_|
-      [m.match[1], m.match[2], m.match[3], m.match[4]] == [g1, g2, g3, g4]
+      [m.match[1], m.match[2], m.match[3], m.match[4]] == capture.values_at(1,2,3,4)
     end
   end
 
@@ -215,6 +221,10 @@ describe Patm::Pattern do
   pattern [0, [1, 2]] do
     it { should match_to [0, [1, 2]] }
     it { should_not match_to [0, [1, 3]] }
+  end
+
+  pattern Patm._any[:x] do
+    it { should match_to("aaa").and_named_capture(:x => "aaa") }
   end
 
   context 'regression' do
