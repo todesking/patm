@@ -233,7 +233,18 @@ describe Patm::Pattern do
     it { should match_to(a: 1, b: 2).and_capture(1) }
   end
 
-  # TODO: {..., Patm.exact: true}
+  pattern(a: Patm._any, Patm.exact => false) do
+    it { should_not match_to(b: 1) }
+    it { should     match_to(a: 1) }
+    it { should     match_to(a: 1, b: 2) }
+  end
+
+  pattern(a: Patm._any, Patm.exact => true) do
+    it { should_not match_to(b: 1) }
+    it { should     match_to(a: 1) }
+    it { should_not match_to(a: 1, b: 2) }
+  end
+
   # TODO: {a: Patm.opt}
 
   context 'regression' do

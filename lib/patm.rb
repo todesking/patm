@@ -19,8 +19,9 @@ module Patm
       when ::Hash
         Hash.new(
           plain.each_with_object({}) do|(k, v), h|
-            h[k] = build_from(v)
-          end
+            h[k] = build_from(v) if k != Patm.exact
+          end,
+          plain[Patm.exact]
         )
       else
         Obj.new(plain)
@@ -80,14 +81,16 @@ module Patm
     end
 
     class Hash < self
-      def initialize(h)
+      def initialize(h, exact)
         @h = h
+        @exact = exact
       end
       def execute(match, obj)
         return false unless obj.is_a?(::Hash)
-        @h.all? {|k, pat|
-          obj.has_key?(k) && pat.execute(match, obj[k])
-        }
+        (@exact ? obj.size == @h.size : obj.size >= @h.size) &&
+          @h.all? {|k, pat|
+            obj.has_key?(k) && pat.execute(match, obj[k])
+          }
       end
     end
 
@@ -302,6 +305,16 @@ module Patm
 
   def self._xs
     @xs = Pattern::ArrRest.new
+  end
+
+  # Use in Hash pattern.
+  # Specify exact match or not.
+  EXACT = Object.new
+  def EXACT.inspect
+    "EXACT"
+  end
+  def self.exact
+    EXACT
   end
 
   PREDEF_GROUP_SIZE = 100
