@@ -233,11 +233,19 @@ module Patm
       end
 
       def compile_internal(free_index, target_name = "_obj")
-        [
-          "_ctx[#{free_index}] === #{target_name}",
-          [@obj],
-          free_index + 1,
-        ]
+        if [Numeric, Symbol, String].any?{|k| @obj.is_a?(k) }
+          [
+            "#{@obj.inspect} === #{target_name}",
+            [],
+            free_index,
+          ]
+        else
+          [
+            "_ctx[#{free_index}] === #{target_name}",
+            [@obj],
+            free_index + 1,
+          ]
+        end
       end
     end
 
