@@ -28,7 +28,16 @@ module Patm
       end
     end
 
+    # Use in Hash pattern.
+    def opt
+      Opt.new(self)
+    end
+
     def execute(match, obj); true; end
+
+    def opt?
+      false
+    end
 
     def rest?
       false
@@ -81,17 +90,40 @@ module Patm
     end
 
     class Hash < self
-      def initialize(h, exact)
-        @h = h
+      def initialize(hash, exact)
+        @pat = hash
         @exact = exact
+        @non_opt_count = @pat.values.count{|v| !v.opt? }
       end
       def execute(match, obj)
         return false unless obj.is_a?(::Hash)
-        (@exact ? obj.size == @h.size : obj.size >= @h.size) &&
-          @h.all? {|k, pat|
-            obj.has_key?(k) && pat.execute(match, obj[k])
+        obj.size >= @non_opt_count &&
+          (!@exact || obj.keys.all?{|k| @pat.has_key?(k) }) &&
+          @pat.all? {|k, pat|
+            if obj.has_key?(k)
+              pat.execute(match, obj[k])
+            else
+              pat.opt?
+            end
           }
       end
+      def inspect; @pat.inspect; end
+      def compile_internal(free_index, target_name = "_obj")
+        super # TODO
+      end
+    end
+
+    class Opt < self
+      def initialize(pat)
+        @pat = pat
+      end
+      def opt?
+        true
+      end
+      def execute(match, obj)
+        @pat.execute(match, obj)
+      end
+      def inspect; "?#{@pat.inspect}"; end
       def compile_internal(free_index, target_name = "_obj")
         super # TODO
       end
@@ -261,6 +293,12 @@ module Patm
           i
         ]
       end
+      def rest?
+        @pats.any?(&:rest?)
+      end
+      def opt?
+        @pats.any?(&:opt?)
+      end
     end
 
     class Or < LogicalOp
@@ -271,9 +309,6 @@ module Patm
         @pats.any? do|pat|
           pat.execute(mmatch, obj)
         end
-      end
-      def rest?
-        @pats.any?(&:rest?)
       end
       def inspect
         "OR(#{@pats.map(&:inspect).join(',')})"
@@ -288,9 +323,6 @@ module Patm
         @pats.all? do|pat|
           pat.execute(mmatch, obj)
         end
-      end
-      def rest?
-        @pats.any?(&:rest?)
       end
       def inspect
         "AND(#{@pats.map(&:inspect).join(',')})"
@@ -310,12 +342,12 @@ module Patm
     @xs = Pattern::ArrRest.new
   end
 
-  # Use in Hash pattern.
-  # Specify exact match or not.
   EXACT = Object.new
   def EXACT.inspect
     "EXACT"
   end
+  # Use in Hash pattern.
+  # Specify exact match or not.
   def self.exact
     EXACT
   end

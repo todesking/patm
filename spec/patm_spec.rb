@@ -245,7 +245,16 @@ describe Patm::Pattern do
     it { should_not match_to(a: 1, b: 2) }
   end
 
-  # TODO: {a: Patm.opt}
+  pattern(a: Patm._any[1].opt) do
+    it { should match_to({}).and_capture(nil) }
+    it { should match_to({a: 1}).and_capture(1) }
+  end
+
+  pattern(a: Patm._any[1], b: Patm._any[2].opt) do
+    it { should_not match_to({}) }
+    it { should     match_to({a: 1}).and_capture(1, nil) }
+    it { should     match_to({a: 1, b: 2}).and_capture(1, 2) }
+  end
 
   context 'regression' do
     pattern [:assign, [:var_field, [:@ident, Patm._1, [Patm._2, Patm._3]]], Patm._4] do
