@@ -54,11 +54,11 @@ module Patm
     def compile
       src, context, _ = self.compile_internal(0)
 
-      Compiled.new(self.inspect, src, context)
+      Compiled.new(self.inspect, src || "true", context)
     end
 
-    # free_index:Numeric -> [src, context, free_index]
-    # variables: _ctx, _match, _obj
+    # free_index:Numeric -> target_name:String -> [src:String|nil, context:Array, free_index:Numeric]
+    # variables: _ctx, _match, (target_name)
     def compile_internal(free_index, target_name = "_obj")
       [
         "_ctx[#{free_index}].execute(_match, #{target_name})",
@@ -174,7 +174,7 @@ module Patm
         elm_target_name = "#{target_name}_elm"
         @head.each_with_index do|h, hi|
           s, c, i = h.compile_internal(i, elm_target_name)
-          srcs << "(#{elm_target_name} = #{target_name}[#{hi}]; #{s})"
+          srcs << "(#{elm_target_name} = #{target_name}[#{hi}]; #{s})" if s
           ctxs << c
         end
 
@@ -182,7 +182,7 @@ module Patm
           srcs << "(#{target_name}_t = #{target_name}[(-#{@tail.size})..-1]; true)"
           @tail.each_with_index do|t, ti|
             s, c, i = t.compile_internal(i, elm_target_name)
-            srcs << "(#{elm_target_name} = #{target_name}_t[#{ti}]; #{s})"
+            srcs << "(#{elm_target_name} = #{target_name}_t[#{ti}]; #{s})" if s
             ctxs << c
           end
         end
@@ -190,12 +190,12 @@ module Patm
         if @rest
           tname = "#{target_name}_r"
           s, c, i = @rest.compile_internal(i, tname)
-          srcs << "(#{tname} = #{target_name}[#{@head.size}..-(#{@tail.size+1})];#{s})"
+          srcs << "(#{tname} = #{target_name}[#{@head.size}..-(#{@tail.size+1})];#{s})" if s
           ctxs << c
         end
 
         [
-          srcs.map{|s| "(#{s})"}.join(" &&\n"),
+          srcs.compact.map{|s| "(#{s})"}.join(" &&\n"),
           ctxs.flatten(1),
           i
         ]
@@ -212,7 +212,7 @@ module Patm
       def inspect; "..."; end
       def compile_internal(free_index, target_name = "_obj")
         [
-          "true",
+          nil,
           [],
           free_index
         ]
@@ -246,7 +246,7 @@ module Patm
       def inspect; 'ANY'; end
       def compile_internal(free_index, target_name = "_obj")
         [
-          "true",
+          nil,
           [],
           free_index
         ]
@@ -290,7 +290,7 @@ module Patm
         end
 
         [
-          srcs.map{|s| "(#{s})" }.join(" #{@op_str}\n"),
+          srcs.compact.map{|s| "(#{s})" }.join(" #{@op_str}\n"),
           ctxs.flatten(1),
           i
         ]
