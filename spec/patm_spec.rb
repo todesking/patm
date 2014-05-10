@@ -212,9 +212,9 @@ describe Patm::Pattern do
     it { should match_to([0, 1, 2, 3]).and_capture([2, 3]) }
   end
 
-  pattern [0, 1, Patm._xs, 2] do
-    it { should match_to([0,1,2]) }
-    it { should match_to([0,1,10,20,30,2]) }
+  pattern [0, 1, Patm._xs[1], 2] do
+    it { should match_to([0,1,2]).and_capture([]) }
+    it { should match_to([0,1,10,20,30,2]).and_capture([10,20,30]) }
     it { should_not match_to([0,1]) }
   end
 
@@ -263,6 +263,10 @@ describe Patm::Pattern do
     pattern [Patm.or(1, 2)] do
       it { should match_to [1] }
       it { should match_to [2] }
+    end
+    pattern [Patm._1, 2, [Patm._any, 3], Patm._xs[1], 4] do
+      it { should match_to([1, 2, [10, 3], 4]).and_capture([]) }
+      it { should match_to([1, 2, [10, 3], 20, 4]).and_capture([20]) }
     end
   end
 end
