@@ -256,6 +256,12 @@ describe Patm::Pattern do
     it { should     match_to({a: 1, b: 2}).and_capture(1, 2) }
   end
 
+  pattern({a: 1} => {b: 2}) do
+    it { should_not match_to({a: 1} => {b: 0}) }
+    it { should_not match_to({a: 0} => {b: 2}) }
+    it { should     match_to({a: 1} => {b: 2}) }
+  end
+
   context 'regression' do
     pattern [:assign, [:var_field, [:@ident, Patm._1, [Patm._2, Patm._3]]], Patm._4] do
       it { should match_to([:assign, [:var_field, [:@ident, 10, [20, 30]]], false]).and_capture(10, 20, 30, false) }
