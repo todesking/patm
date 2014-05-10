@@ -102,20 +102,35 @@ end
 
 ## Patterns
 
-### `1`, `:x`, String, ...
+### Value
 
-Normal pattern matches if `pattern === value` is true.
+Value patterns such as `1, :x, String, ...` matches if `pattern === target_value` is true.
 
 ### Array
 
+`[1, 2, _any]` matches `[1, 2, 3]`, `[1, 2, :x]`, etc.
+
 `[1, 2, _xs]` matches `[1, 2]`, `[1, 2, 3]`, `[1, 2, 3, 4]`, etc.
+
 `[1, _xs, 2]` matches `[1, 2]`, `[1, 10, 2]`, etc.
 
 Note: More than one `_xs` in same array is invalid.
 
+### Hash
+
+`{a: 1}` matches `{a: 1}`, `{a: 1, b: 2}`, etc.
+
+`{a: 1, Patm.exact => true}` matches only `{a: 1}`.
+
+`{a: 1, b: Patm.opt(2)}` matches `{a: 1}`, `{a: 1, b: 2}`.
+
 ### Capture
 
 `_1`, `_2`, etc matches any value, and capture the value as correspond match group.
+
+`Pattern#[capture_name]` also used for capture.`Patm._any[:foo]` capture any value as `foo`.
+
+Captured values are accessible through `Match#_1, _2, ...` and `Match#[capture_name]`
 
 ### Compose
 

@@ -399,11 +399,17 @@ module Patm
     @xs = Pattern::ArrRest.new
   end
 
+  # Use in hash value.
+  # Mark this pattern is optional.
+  def self.opt(pat = _any)
+    Pattern::Opt.new(Pattern.build_from(pat))
+  end
+
   EXACT = Object.new
   def EXACT.inspect
     "EXACT"
   end
-  # Use in Hash pattern.
+  # Use in Hash key.
   # Specify exact match or not.
   def self.exact
     EXACT
