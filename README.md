@@ -130,6 +130,7 @@ Note: More than one `_xs` in same array is invalid.
 - Named capture
 - Patm::GROUPS is obsolete. Use `pattern[number_or_name]` or `Patm._1, _2, ...` instead.
 - More optimize for compiled pattern.
+- Hash patterns
 
 ### 1.0.0
 
