@@ -62,7 +62,7 @@ module Patm
     end
 
     def &(rhs)
-      And.new([self, rhs])
+      And.new([self, Pattern.build_from(rhs)])
     end
 
     def [](name)

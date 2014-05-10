@@ -140,7 +140,11 @@ Captured values are accessible through `Match#_1, _2, ...` and `Match#[capture_n
 
 ## Changes
 
-### 2.0.0(Unreleased)
+### 2.0.1(unreleased)
+
+- Bugfix: About pattern `Patm._1 & Array`.
+
+### 2.0.0
 
 - Named capture
 - Patm::GROUPS is obsolete. Use `pattern[number_or_name]` or `Patm._1, _2, ...` instead.

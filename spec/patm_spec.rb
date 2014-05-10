@@ -274,5 +274,9 @@ describe Patm::Pattern do
       it { should match_to([1, 2, [10, 3], 4]).and_capture([]) }
       it { should match_to([1, 2, [10, 3], 20, 4]).and_capture([20]) }
     end
+    pattern Patm._1&Array do
+      it { should_not match_to(1) }
+      it { should     match_to([]).and_capture([]) }
+    end
   end
 end
