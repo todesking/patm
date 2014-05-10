@@ -28,6 +28,24 @@ module Patm
       end
     end
 
+    module Util
+      def self.compile_value(value, free_index)
+        if value.is_a?(Numeric) || value.is_a?(String) || value.is_a?(Symbol)
+          [
+            value.inspect,
+            [],
+            free_index,
+          ]
+        else
+          [
+            "_ctx[#{free_index}]",
+            [value],
+            free_index + 1,
+          ]
+        end
+      end
+    end
+
     # Use in Hash pattern.
     def opt
       Opt.new(self)
@@ -109,7 +127,43 @@ module Patm
       end
       def inspect; @pat.inspect; end
       def compile_internal(free_index, target_name = "_obj")
-        super # TODO
+        i = free_index
+        ctxs = []
+        src = []
+
+        ctxs << [@pat]
+        i += 1
+
+        pat = "_ctx[#{free_index}]"
+        src << "#{target_name}.is_a?(::Hash)"
+        src << "#{target_name}.size >= #{@non_opt_count}"
+        if @exact
+          src << "#{target_name}.keys.all?{|k| #{pat}.has_key?(k) }"
+        end
+        tname = "#{target_name}_elm"
+        @pat.each do|k, v|
+          key_src, c, i = Util.compile_value(k, i)
+          ctxs << c
+          s, c, i = v.compile_internal(i, tname)
+          body =
+            if s
+              "(#{tname} = #{target_name}[#{key_src}]; #{s})"
+            else
+              "true"
+            end
+          src <<
+            if v.opt?
+              "(!#{target_name}.has_key?(#{key_src}) || #{body})"
+            else
+              "(#{target_name}.has_key?(#{key_src}) && #{body})"
+            end
+          ctxs << c
+        end
+        [
+          src.join(" &&\n"),
+          ctxs.flatten(1),
+          i,
+        ]
       end
     end
 
@@ -125,7 +179,7 @@ module Patm
       end
       def inspect; "?#{@pat.inspect}"; end
       def compile_internal(free_index, target_name = "_obj")
-        super # TODO
+        @pat.compile_internal(free_index, target_name)
       end
     end
 
@@ -233,19 +287,12 @@ module Patm
       end
 
       def compile_internal(free_index, target_name = "_obj")
-        if [Numeric, Symbol, String].any?{|k| @obj.is_a?(k) }
-          [
-            "#{@obj.inspect} === #{target_name}",
-            [],
-            free_index,
-          ]
-        else
-          [
-            "_ctx[#{free_index}] === #{target_name}",
-            [@obj],
-            free_index + 1,
-          ]
-        end
+        val_src, c, i = Util.compile_value(@obj, free_index)
+        [
+          "#{val_src} === #{target_name}",
+          c,
+          i
+        ]
       end
     end
 
