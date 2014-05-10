@@ -178,11 +178,13 @@ module Patm
           ctxs << c
         end
 
-        srcs << "(#{target_name}_t = #{target_name}[(-#{@tail.size})..-1]; true)"
-        @tail.each_with_index do|t, ti|
-          s, c, i = t.compile_internal(i, elm_target_name)
-          srcs << "(#{elm_target_name} = #{target_name}_t[#{ti}]; #{s})"
-          ctxs << c
+        unless @tail.empty?
+          srcs << "(#{target_name}_t = #{target_name}[(-#{@tail.size})..-1]; true)"
+          @tail.each_with_index do|t, ti|
+            s, c, i = t.compile_internal(i, elm_target_name)
+            srcs << "(#{elm_target_name} = #{target_name}_t[#{ti}]; #{s})"
+            ctxs << c
+          end
         end
 
         if @rest
