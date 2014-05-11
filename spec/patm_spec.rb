@@ -278,5 +278,9 @@ describe Patm::Pattern do
       it { should_not match_to(1) }
       it { should     match_to([]).and_capture([]) }
     end
+    pattern Patm.or(1, Patm._any) do
+      it { should match_to(1) }
+      it { should match_to(999) }
+    end
   end
 end

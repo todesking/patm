@@ -143,6 +143,7 @@ Captured values are accessible through `Match#_1, _2, ...` and `Match#[capture_n
 ### 2.0.1(unreleased)
 
 - Bugfix: About pattern `Patm._1 & Array`.
+- Bugfix: Compiler bug fix.
 
 ### 2.0.0
 

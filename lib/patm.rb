@@ -340,7 +340,11 @@ module Patm
         ctxs = []
         @pats.each do|pat|
           s, c, i = pat.compile_internal(i, target_name)
-          srcs << s
+          if !s && @op_str == '||' # dirty...
+            srcs << 'true'
+          else
+            srcs << s
+          end
           ctxs << c
         end
 
