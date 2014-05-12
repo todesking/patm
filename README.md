@@ -140,7 +140,7 @@ Captured values are accessible through `Match#_1, _2, ...` and `Match#[capture_n
 
 ## Changes
 
-### 2.0.1(unreleased)
+### 2.0.1
 
 - Bugfix: About pattern `Patm._1 & Array`.
 - Bugfix: Compiler bug fix.
