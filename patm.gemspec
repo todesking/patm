@@ -18,4 +18,5 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency('rspec', '~>2.14')
   s.add_development_dependency('pry', '~>0.9')
+  s.add_development_dependency('pattern-match', '=0.5.1') # for benchmarking
 end
