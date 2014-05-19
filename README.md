@@ -138,6 +138,38 @@ Captured values are accessible through `Match#_1, _2, ...` and `Match#[capture_n
 `Patm.or(1, 2)` matches 1 or 2.
 
 
+## Performance
+
+see [benchmark code](./benchmark/comparison.rb) for details
+
+```
+# MacBook Air(Late 2010) C2D 1.8GHz, OS X 10.9.2
+
+RUBY_VERSION: 2.0.0
+
+Benchmark: SimpleConst
+                    user     system      total        real
+manual          0.160000   0.000000   0.160000 (  0.159555)
+patm            1.020000   0.000000   1.020000 (  1.053630)
+patm_case       1.800000   0.000000   1.800000 (  1.941674)
+pattern_match  23.430000   0.210000  23.640000 ( 28.264229)
+
+Benchmark: ArrayDecomposition
+                    user     system      total        real
+manual          0.050000   0.000000   0.050000 (  0.051879)
+patm            0.400000   0.000000   0.400000 (  0.410650)
+patm_case       2.080000   0.010000   2.090000 (  2.255956)
+pattern_match  16.760000   0.160000  16.920000 ( 19.039155)
+
+Benchmark: VarArray
+                    user     system      total        real
+manual          0.060000   0.000000   0.060000 (  0.070630)
+patm            0.330000   0.000000   0.330000 (  0.370033)
+patm_case       1.700000   0.000000   1.700000 (  1.766639)
+pattern_match  13.500000   0.170000  13.670000 ( 20.414078)
+```
+
+
 ## Changes
 
 ### 2.0.1
