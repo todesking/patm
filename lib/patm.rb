@@ -90,6 +90,7 @@ module Patm
         @desc = desc
         @context = context
         singleton_class = class <<self; self; end
+        @src_body = src
         @src = <<-RUBY
         def execute(_match, _obj)
           _ctx = @context
@@ -99,10 +100,15 @@ module Patm
         singleton_class.class_eval(@src)
       end
 
+      attr_reader :src_body
       attr_reader :src
 
       def compile_internal(free_index, target_name = "_obj")
-        raise "Already compiled"
+        [
+          src_body,
+          @context,
+          free_index + @context.size
+        ]
       end
       def inspect; "<compiled>#{@desc}"; end
     end
@@ -436,7 +442,7 @@ module Patm
   class Rule
     def initialize(compile = true, &block)
       @compile = compile
-      # { Pattern => Proc }
+      # [[Pattern, Proc]...]
       @rules = []
       @else = ->(obj){nil}
       block[self]
@@ -463,6 +469,47 @@ module Patm
       end
       @else[obj, _self]
     end
+
+    def compile
+      i = 0
+      ctxs = []
+      srcs = []
+      @rules.each do|pat, block|
+        s, c, i = pat.compile_internal(i, '_obj')
+        ctxs << c
+        ctxs << [block]
+        srcs << "if (#{s || 'true'})\n_ctx[#{i}].call(_match, _self)"
+        i += 1
+      end
+      src = srcs.join("\nels")
+      if @else
+        src << "\nelse\n_ctx[#{i}].call(_obj, _self)"
+        ctxs << [@else]
+        i += 1
+      end
+      src << "\nend"
+      Compiled.new(
+        src,
+        ctxs.flatten(1)
+      )
+    end
+
+    class Compiled
+      def initialize(src_body, context)
+        @src_body = src_body
+        @context = context
+        @src = <<-RUBY
+        def apply(_obj, _self)
+          _ctx = @context
+          _match = ::Patm::Match.new
+#{@src_body}
+        end
+        RUBY
+
+        singleton_class = class <<self; self; end
+        singleton_class.class_eval(@src)
+      end
+    end
   end
 
   class RuleCache
@@ -471,7 +518,7 @@ module Patm
       @rules = {}
     end
     def match(rule_name, obj, _self = nil, &rule)
-      (@rules[rule_name] ||= ::Patm::Rule.new(@compile, &rule)).apply(obj, _self)
+      (@rules[rule_name] ||= ::Patm::Rule.new(@compile, &rule).compile).apply(obj, _self)
     end
   end
 
