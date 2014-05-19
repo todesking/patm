@@ -7,14 +7,11 @@ def benchmark(klass, n)
   Benchmark.bm('pattern-match'.size) do|b|
     obj = klass.new
     test_values = obj.test_values
-    b.report("manual") do
-      n.times { test_values.each {|val| obj.manual(val) } }
-    end
-    b.report("PATM") do
-      n.times { test_values.each {|val| obj.patm(val) } }
-    end
-    b.report("pattern-match") do
-      n.times { test_values.each {|val| obj.pattern_match(val) } }
+    (klass.instance_methods - Object.instance_methods - [:test_values]).each do|method_name|
+      b.report(method_name) do
+        m = obj.method(method_name)
+        n.times { test_values.each {|val| m.call(val) } }
+      end
     end
   end
   puts
@@ -54,6 +51,17 @@ class SimpleConst
     r.else { 300 }
   end
 
+  def patm_case(obj)
+    case obj
+    when m = Patm.match(1)
+        100
+    when m = Patm.match(2)
+        200
+    else
+      300
+    end
+  end
+
   def pattern_match(obj)
     match(obj) do
       with(1) { 100 }
@@ -91,6 +99,20 @@ class ArrayDecomposition
     r.else { nil }
   end
 
+  def patm_case(obj)
+    _1, _2 = Patm._1, Patm._2
+    case obj
+    when m = Patm.match([1, _1, 2])
+      m._1
+    when m = Patm.match([1, _1, _2])
+      [m._1, m._2]
+    when m = Patm.match(nil)
+      100
+    else
+      nil
+    end
+  end
+
   def pattern_match(obj)
     match(obj) do
       with(_[1, _1, 2]) { _1 }
@@ -124,6 +146,15 @@ class VarArray
   define_matcher :patm do|r|
     r.on([1, 2, Patm._xs[1]]) {|m| m[1] }
     r.else { nil }
+  end
+
+  def patm_case(obj)
+    case obj
+    when m = Patm.match([1, 2, Patm._xs[1]])
+      m._1
+    else
+      nil
+    end
   end
 
   def pattern_match(obj)
