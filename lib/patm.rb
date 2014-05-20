@@ -512,16 +512,6 @@ module Patm
     end
   end
 
-  class RuleCache
-    def initialize(compile = true)
-      @compile = compile
-      @rules = {}
-    end
-    def match(rule_name, obj, _self = nil, &rule)
-      (@rules[rule_name] ||= ::Patm::Rule.new(@compile, &rule).compile).apply(obj, _self)
-    end
-  end
-
   class Match
     def initialize
       @group = {}
@@ -562,10 +552,9 @@ module Patm
 
   module DSL
     def define_matcher(name, &rule)
-      @patm_rules ||= RuleCache.new
-      rules = @patm_rules
+      rule = Rule.new(&rule).compile
       define_method name do|obj|
-        rules.match(name, obj, self, &rule)
+        rule.apply(obj, self)
       end
     end
   end

@@ -75,31 +75,6 @@ rule.apply([:x, :y, :z])
 rule.apply([])
 # => nil
 ```
-
-```ruby
-# With cached rules
-class A
-  def initialize
-    @rules = Patm::RuleCache.new
-  end
-
-  def match1(obj)
-    @rules.match(:match1, obj) do|r|
-      p = Patm
-      r.on [:x, p._1, p._2] do|m|
-        [m._1, m._2]
-      end
-    end
-  end
-
-  def match2(obj)
-    @rules.match(:match2, obj) do|r|
-      # ...
-    end
-  end
-end
- ```
-
 ## Patterns
 
 ### Value
@@ -171,6 +146,10 @@ pattern_match  13.500000   0.170000  13.670000 ( 20.414078)
 
 
 ## Changes
+
+### 3.0.0
+
+- RuleCache is now obsoleted. Use DSL.
 
 ### 2.0.1
 
