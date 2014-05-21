@@ -504,6 +504,9 @@ module Patm
         singleton_class = class <<self; self; end
         singleton_class.class_eval(@src)
       end
+
+      attr_reader :src_body
+      attr_reader :context
     end
   end
 
@@ -548,9 +551,17 @@ module Patm
   module DSL
     def define_matcher(name, &rule)
       rule = Rule.new(&rule).compile
-      define_method name do|obj|
-        rule.apply(obj, self)
+      ctx = rule.context
+      self.class_variable_set("@@_patm_ctx_#{name}", ctx)
+      src = <<-RUBY
+      def #{name}(_obj)
+        _self = self
+        _ctx = self.class.class_variable_get(:@@_patm_ctx_#{name})
+        _match = ::Patm::Match.new
+#{rule.src_body}
       end
+      RUBY
+      class_eval(src)
     end
   end
 end

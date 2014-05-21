@@ -10,6 +10,7 @@ def benchmark(klass, n)
     (klass.instance_methods - Object.instance_methods - [:test_values]).each do|method_name|
       b.report(method_name) do
         m = obj.method(method_name)
+        m.call(nil)
         n.times { test_values.each {|val| m.call(val) } }
       end
     end
