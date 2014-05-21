@@ -104,11 +104,7 @@ module Patm
       attr_reader :src
 
       def compile_internal(free_index, target_name = "_obj")
-        [
-          src_body,
-          @context,
-          free_index + @context.size
-        ]
+        raise "already compiled"
       end
       def inspect; "<compiled>#{@desc}"; end
     end
@@ -440,8 +436,7 @@ module Patm
   end
 
   class Rule
-    def initialize(compile = true, &block)
-      @compile = compile
+    def initialize(&block)
       # [[Pattern, Proc]...]
       @rules = []
       @else = ->(obj){nil}
@@ -449,11 +444,7 @@ module Patm
     end
 
     def on(pat, &block)
-      if @compile
-        @rules << [Pattern.build_from(pat).compile, block]
-      else
-        @rules << [Pattern.build_from(pat), block]
-      end
+      @rules << [Pattern.build_from(pat), block]
     end
 
     def else(&block)
@@ -468,6 +459,10 @@ module Patm
         end
       end
       @else[obj, _self]
+    end
+
+    def inspect
+      "Rule{#{@rules.map(&:first).map(&:inspect).join(', ')}#{@else ? ', _' : ''}}"
     end
 
     def compile
@@ -499,7 +494,7 @@ module Patm
         @src_body = src_body
         @context = context
         @src = <<-RUBY
-        def apply(_obj, _self)
+        def apply(_obj, _self = nil)
           _ctx = @context
           _match = ::Patm::Match.new
 #{@src_body}

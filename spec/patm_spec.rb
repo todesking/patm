@@ -47,7 +47,11 @@ module PatmHelper
     extend RSpec::Matchers::DSL
     matcher :converts do|value, result|
       match do|rule|
-        rule.apply(value, nil).should == result
+        @matched = rule.apply(value, nil)
+        @matched == result
+      end
+      failure_message_for_should do|rule|
+        "match #{value.inspect} to #{rule.inspect}: expected #{result} but #{@matched.inspect}"
       end
     end
   end
@@ -68,7 +72,7 @@ describe "Usage:" do
 
   it 'with predefined Rule' do
     p = Patm
-    r = p::Rule.new(false) do|r|
+    r = p::Rule.new do|r|
       r.on [1, p._1, p._2] do|m|
         [m._1, m._2]
       end
@@ -79,13 +83,13 @@ describe "Usage:" do
 
   it 'with predefined Rule(compiled)' do
     p = Patm
-    r = p::Rule.new(true) do|r|
+    r = p::Rule.new do|r|
       r.on [1, p._1, p._2] do|m|
         [m._1, m._2]
       end
       r.else {|obj| [] }
     end
-    r.apply([1, 2, 3]).should == [2, 3]
+    r.compile.apply([1, 2, 3]).should == [2, 3]
   end
 
   it 'with DSL' do
@@ -125,7 +129,7 @@ describe Patm::Rule do
   def self.rule(name, definition, &block)
     [[false, "#{name}"], [true, "#{name}(compiled)"]].each do|compile, name|
       describe name do
-        subject { Patm::Rule.new(compile, &definition) }
+        subject { Patm::Rule.new(&definition).tap{|r| break r.compile if compile } }
         self.instance_eval(&block)
       end
     end
@@ -137,6 +141,21 @@ describe Patm::Rule do
   }) do
     it { should converts([1, 2, 3], [2, 3]) }
     it { should converts([1], []) }
+  end
+
+  context 'regression' do
+    rule(:reg1, ->(r){
+      _1, _2 = Patm._1, Patm._2
+      r.on([1, _1, 2]) {|m| m._1 }
+      r.on([1, _1, _2]) {|m| [m._1, m._2] }
+      r.on(nil) { 100 }
+      r.else { nil }
+    }) do
+      it { should converts([1, 2, 2], 2) }
+      it { should converts([1, 2, 3], [2, 3]) }
+      it { should converts(nil, 100) }
+      it { should converts([], nil) }
+    end
   end
 end
 
