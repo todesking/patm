@@ -12,7 +12,6 @@ def benchmark(klass, n)
     target_methods.each do|method_name|
       b.report(method_name) do
         m = obj.method(method_name)
-        m.call(nil)
         n.times { test_values.each {|val| m.call(val) } }
       end
     end
