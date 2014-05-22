@@ -75,31 +75,6 @@ rule.apply([:x, :y, :z])
 rule.apply([])
 # => nil
 ```
-
-```ruby
-# With cached rules
-class A
-  def initialize
-    @rules = Patm::RuleCache.new
-  end
-
-  def match1(obj)
-    @rules.match(:match1, obj) do|r|
-      p = Patm
-      r.on [:x, p._1, p._2] do|m|
-        [m._1, m._2]
-      end
-    end
-  end
-
-  def match2(obj)
-    @rules.match(:match2, obj) do|r|
-      # ...
-    end
-  end
-end
- ```
-
 ## Patterns
 
 ### Value
@@ -149,28 +124,32 @@ RUBY_VERSION: 2.0.0
 
 Benchmark: SimpleConst
                     user     system      total        real
-manual          0.160000   0.000000   0.160000 (  0.159555)
-patm            1.020000   0.000000   1.020000 (  1.053630)
-patm_case       1.800000   0.000000   1.800000 (  1.941674)
-pattern_match  23.430000   0.210000  23.640000 ( 28.264229)
+manual          0.140000   0.000000   0.140000 (  0.147400)
+patm            0.600000   0.010000   0.610000 (  0.638838)
+patm_case       1.830000   0.010000   1.840000 (  1.937155)
+pattern_match  23.650000   0.210000  23.860000 ( 25.942151)
 
 Benchmark: ArrayDecomposition
                     user     system      total        real
-manual          0.050000   0.000000   0.050000 (  0.051879)
-patm            0.400000   0.000000   0.400000 (  0.410650)
-patm_case       2.080000   0.010000   2.090000 (  2.255956)
-pattern_match  16.760000   0.160000  16.920000 ( 19.039155)
+manual          0.050000   0.000000   0.050000 (  0.085568)
+patm            0.270000   0.010000   0.280000 (  0.401019)
+patm_case       2.040000   0.010000   2.050000 (  2.542223)
+pattern_match  17.020000   0.170000  17.190000 ( 20.852308)
 
 Benchmark: VarArray
                     user     system      total        real
-manual          0.060000   0.000000   0.060000 (  0.070630)
-patm            0.330000   0.000000   0.330000 (  0.370033)
-patm_case       1.700000   0.000000   1.700000 (  1.766639)
-pattern_match  13.500000   0.170000  13.670000 ( 20.414078)
+manual          0.060000   0.000000   0.060000 (  0.104558)
+patm            0.240000   0.010000   0.250000 (  0.250806)
+patm_case       1.650000   0.000000   1.650000 (  1.702462)
+pattern_match  13.650000   0.120000  13.770000 ( 15.736944)
 ```
 
 
 ## Changes
+
+### 3.0.0
+
+- RuleCache is now obsoleted. Use DSL.
 
 ### 2.0.1
 

@@ -30,7 +30,7 @@ module Patm
 
     module Util
       def self.compile_value(value, free_index)
-        if value.is_a?(Numeric) || value.is_a?(String) || value.is_a?(Symbol)
+        if value.nil? || value.is_a?(Numeric) || value.is_a?(String) || value.is_a?(Symbol)
           [
             value.inspect,
             [],
@@ -90,6 +90,7 @@ module Patm
         @desc = desc
         @context = context
         singleton_class = class <<self; self; end
+        @src_body = src
         @src = <<-RUBY
         def execute(_match, _obj)
           _ctx = @context
@@ -99,10 +100,11 @@ module Patm
         singleton_class.class_eval(@src)
       end
 
+      attr_reader :src_body
       attr_reader :src
 
       def compile_internal(free_index, target_name = "_obj")
-        raise "Already compiled"
+        raise "already compiled"
       end
       def inspect; "<compiled>#{@desc}"; end
     end
@@ -227,16 +229,22 @@ module Patm
 
         elm_target_name = "#{target_name}_elm"
         @head.each_with_index do|h, hi|
-          s, c, i = h.compile_internal(i, elm_target_name)
-          srcs << "(#{elm_target_name} = #{target_name}[#{hi}]; #{s})" if s
-          ctxs << c
+          if h.is_a?(Obj)
+            s, c, i = h.compile_internal(i, "#{target_name}[#{hi}]")
+            srcs << "#{s}" if s
+            ctxs << c
+          else
+            s, c, i = h.compile_internal(i, elm_target_name)
+            srcs << "#{elm_target_name} = #{target_name}[#{hi}]; #{s}" if s
+            ctxs << c
+          end
         end
 
         unless @tail.empty?
-          srcs << "(#{target_name}_t = #{target_name}[(-#{@tail.size})..-1]; true)"
+          srcs << "#{target_name}_t = #{target_name}[(-#{@tail.size})..-1]; true"
           @tail.each_with_index do|t, ti|
             s, c, i = t.compile_internal(i, elm_target_name)
-            srcs << "(#{elm_target_name} = #{target_name}_t[#{ti}]; #{s})" if s
+            srcs << "#{elm_target_name} = #{target_name}_t[#{ti}]; #{s}" if s
             ctxs << c
           end
         end
@@ -244,7 +252,7 @@ module Patm
         if @rest
           tname = "#{target_name}_r"
           s, c, i = @rest.compile_internal(i, tname)
-          srcs << "(#{tname} = #{target_name}[#{@head.size}..-(#{@tail.size+1})];#{s})" if s
+          srcs << "#{tname} = #{target_name}[#{@head.size}..-(#{@tail.size+1})];#{s}" if s
           ctxs << c
         end
 
@@ -434,20 +442,15 @@ module Patm
   end
 
   class Rule
-    def initialize(compile = true, &block)
-      @compile = compile
-      # { Pattern => Proc }
+    def initialize(&block)
+      # [[Pattern, Proc]...]
       @rules = []
       @else = ->(obj){nil}
       block[self]
     end
 
     def on(pat, &block)
-      if @compile
-        @rules << [Pattern.build_from(pat).compile, block]
-      else
-        @rules << [Pattern.build_from(pat), block]
-      end
+      @rules << [Pattern.build_from(pat), block]
     end
 
     def else(&block)
@@ -463,15 +466,60 @@ module Patm
       end
       @else[obj, _self]
     end
-  end
 
-  class RuleCache
-    def initialize(compile = true)
-      @compile = compile
-      @rules = {}
+    def inspect
+      "Rule{#{@rules.map(&:first).map(&:inspect).join(', ')}#{@else ? ', _' : ''}}"
     end
-    def match(rule_name, obj, _self = nil, &rule)
-      (@rules[rule_name] ||= ::Patm::Rule.new(@compile, &rule)).apply(obj, _self)
+
+    def compile_call(block, *args)
+      "call(#{args[0...block.arity].join(', ')})"
+    end
+
+    def compile
+      i = 0
+      ctxs = []
+      srcs = []
+      @rules.each do|pat, block|
+        s, c, i = pat.compile_internal(i, '_obj')
+        ctxs << c
+        ctxs << [block]
+        srcs << "if (#{s || 'true'})\n_ctx[#{i}].#{compile_call(block, "_match"," _self")}"
+        i += 1
+      end
+      src = srcs.join("\nels")
+      if @else
+        unless srcs.empty?
+          src << "\nelse\n"
+        end
+        src << "_ctx[#{i}].#{compile_call(@else, "_obj"," _self")}"
+        ctxs << [@else]
+        i += 1
+      end
+      src << "\nend" unless srcs.empty?
+      Compiled.new(
+        src,
+        ctxs.flatten(1)
+      )
+    end
+
+    class Compiled
+      def initialize(src_body, context)
+        @src_body = src_body
+        @context = context
+        @src = <<-RUBY
+        def apply(_obj, _self = nil)
+          _ctx = @context
+          _match = ::Patm::Match.new
+#{@src_body}
+        end
+        RUBY
+
+        singleton_class = class <<self; self; end
+        singleton_class.class_eval(@src)
+      end
+
+      attr_reader :src_body
+      attr_reader :context
     end
   end
 
@@ -515,11 +563,18 @@ module Patm
 
   module DSL
     def define_matcher(name, &rule)
-      @patm_rules ||= RuleCache.new
-      rules = @patm_rules
-      define_method name do|obj|
-        rules.match(name, obj, self, &rule)
+      rule = Rule.new(&rule).compile
+      ctx = rule.context
+      self.class_variable_set("@@_patm_ctx_#{name}", ctx)
+      src = <<-RUBY
+      def #{name}(_obj)
+        _self = self
+        _ctx = self.#{self.name ? 'class' : 'singleton_class'}.class_variable_get(:@@_patm_ctx_#{name})
+        _match = ::Patm::Match.new
+#{rule.src_body}
       end
+      RUBY
+      class_eval(src)
     end
   end
 end
