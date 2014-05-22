@@ -1,7 +1,7 @@
 require 'benchmark'
 
 def benchmark(klass, n)
-  puts "Benchmark: #{klass}"
+  puts "Benchmark: #{klass}(x#{n})"
 
   target_methods = klass.instance_methods - Object.instance_methods - [:test_values]
   validate(klass, target_methods)
@@ -200,10 +200,10 @@ class VarArray
 end
 
 
-puts "RUBY_VERSION: #{RUBY_VERSION}"
+puts "RUBY_VERSION: #{RUBY_VERSION} p#{RUBY_PATCHLEVEL}"
 puts
 
-benchmark Empty, 100000
-benchmark SimpleConst, 100000
+benchmark Empty, 10000
+benchmark SimpleConst, 10000
 benchmark ArrayDecomposition, 10000
 benchmark VarArray, 10000

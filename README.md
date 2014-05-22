@@ -117,31 +117,37 @@ Captured values are accessible through `Match#_1, _2, ...` and `Match#[capture_n
 
 see [benchmark code](./benchmark/comparison.rb) for details
 
+Machine: MacBook Air(Late 2010) C2D 1.8GHz, OS X 10.9.2
+
 ```
-# MacBook Air(Late 2010) C2D 1.8GHz, OS X 10.9.2
+RUBY_VERSION: 2.1.2 p95
 
-RUBY_VERSION: 2.0.0
-
-Benchmark: SimpleConst
+Benchmark: Empty(x10000)
                     user     system      total        real
-manual          0.140000   0.000000   0.140000 (  0.147400)
-patm            0.600000   0.010000   0.610000 (  0.638838)
-patm_case       1.830000   0.010000   1.840000 (  1.937155)
-pattern_match  23.650000   0.210000  23.860000 ( 25.942151)
+manual          0.010000   0.000000   0.010000 (  0.012252)
+patm            0.060000   0.000000   0.060000 (  0.057050)
+pattern_match   1.710000   0.010000   1.720000 (  1.765749)
 
-Benchmark: ArrayDecomposition
+Benchmark: SimpleConst(x10000)
                     user     system      total        real
-manual          0.050000   0.000000   0.050000 (  0.085568)
-patm            0.270000   0.010000   0.280000 (  0.401019)
-patm_case       2.040000   0.010000   2.050000 (  2.542223)
-pattern_match  17.020000   0.170000  17.190000 ( 20.852308)
+manual          0.020000   0.000000   0.020000 (  0.018274)
+patm            0.060000   0.000000   0.060000 (  0.075068)
+patm_case       0.160000   0.000000   0.160000 (  0.161002)
+pattern_match   1.960000   0.020000   1.980000 (  2.007936)
 
-Benchmark: VarArray
+Benchmark: ArrayDecomposition(x10000)
                     user     system      total        real
-manual          0.060000   0.000000   0.060000 (  0.104558)
-patm            0.240000   0.010000   0.250000 (  0.250806)
-patm_case       1.650000   0.000000   1.650000 (  1.702462)
-pattern_match  13.650000   0.120000  13.770000 ( 15.736944)
+manual          0.050000   0.000000   0.050000 (  0.047948)
+patm            0.250000   0.000000   0.250000 (  0.254039)
+patm_case       1.710000   0.000000   1.710000 (  1.765656)
+pattern_match  12.890000   0.060000  12.950000 ( 13.343334)
+
+Benchmark: VarArray(x10000)
+                    user     system      total        real
+manual          0.050000   0.000000   0.050000 (  0.052425)
+patm            0.210000   0.000000   0.210000 (  0.223190)
+patm_case       1.440000   0.000000   1.440000 (  1.587535)
+pattern_match  10.050000   0.070000  10.120000 ( 10.898683)
 ```
 
 
