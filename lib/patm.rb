@@ -556,7 +556,7 @@ module Patm
       src = <<-RUBY
       def #{name}(_obj)
         _self = self
-        _ctx = self.class.class_variable_get(:@@_patm_ctx_#{name})
+        _ctx = self.#{self.name ? 'class' : 'singleton_class'}.class_variable_get(:@@_patm_ctx_#{name})
         _match = ::Patm::Match.new
 #{rule.src_body}
       end
