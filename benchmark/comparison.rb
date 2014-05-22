@@ -2,12 +2,14 @@ require 'benchmark'
 
 def benchmark(klass, n)
   puts "Benchmark: #{klass}"
-  validate(klass)
+
+  target_methods = klass.instance_methods - Object.instance_methods - [:test_values]
+  validate(klass, target_methods)
 
   Benchmark.bm('pattern-match'.size) do|b|
     obj = klass.new
     test_values = obj.test_values
-    (klass.instance_methods - Object.instance_methods - [:test_values]).each do|method_name|
+    target_methods.each do|method_name|
       b.report(method_name) do
         m = obj.method(method_name)
         m.call(nil)
@@ -18,14 +20,12 @@ def benchmark(klass, n)
   puts
 end
 
-def validate(klass)
+def validate(klass, target_methods)
   obj = klass.new
   obj.test_values.each do|val|
-    man = obj.manual(val)
-    patm = obj.patm(val)
-    pm = obj.pattern_match(val)
-    if patm != pm || man != pm
-      raise "ERROR: Result not match. val=#{val.inspect}, manual: #{man.inspect}, PATM: #{patm.inspect}, pattern-match: #{pm.inspect}"
+    results = target_methods.map {|name| [name, obj.public_send(name, val)] }
+    unless results.each_cons(2).all?{|(_, a), (_, b)| a == b }
+      raise "ERROR: Result not match. val=#{val.inspect}, #{results.map{|n,r| "#{n}=#{r.inspect}"}.join(', ')}"
     end
   end
 end
