@@ -30,7 +30,7 @@ module Patm
 
     module Util
       def self.compile_value(value, free_index)
-        if value.is_a?(Numeric) || value.is_a?(String) || value.is_a?(Symbol)
+        if value.nil? || value.is_a?(Numeric) || value.is_a?(String) || value.is_a?(Symbol)
           [
             value.inspect,
             [],
@@ -229,9 +229,15 @@ module Patm
 
         elm_target_name = "#{target_name}_elm"
         @head.each_with_index do|h, hi|
-          s, c, i = h.compile_internal(i, elm_target_name)
-          srcs << "(#{elm_target_name} = #{target_name}[#{hi}]; #{s})" if s
-          ctxs << c
+          if h.is_a?(Obj)
+            s, c, i = h.compile_internal(i, "#{target_name}[#{hi}]")
+            srcs << "#{s}" if s
+            ctxs << c
+          else
+            s, c, i = h.compile_internal(i, elm_target_name)
+            srcs << "(#{elm_target_name} = #{target_name}[#{hi}]; #{s})" if s
+            ctxs << c
+          end
         end
 
         unless @tail.empty?
