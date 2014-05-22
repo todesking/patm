@@ -235,16 +235,16 @@ module Patm
             ctxs << c
           else
             s, c, i = h.compile_internal(i, elm_target_name)
-            srcs << "(#{elm_target_name} = #{target_name}[#{hi}]; #{s})" if s
+            srcs << "#{elm_target_name} = #{target_name}[#{hi}]; #{s}" if s
             ctxs << c
           end
         end
 
         unless @tail.empty?
-          srcs << "(#{target_name}_t = #{target_name}[(-#{@tail.size})..-1]; true)"
+          srcs << "#{target_name}_t = #{target_name}[(-#{@tail.size})..-1]; true"
           @tail.each_with_index do|t, ti|
             s, c, i = t.compile_internal(i, elm_target_name)
-            srcs << "(#{elm_target_name} = #{target_name}_t[#{ti}]; #{s})" if s
+            srcs << "#{elm_target_name} = #{target_name}_t[#{ti}]; #{s}" if s
             ctxs << c
           end
         end
@@ -252,7 +252,7 @@ module Patm
         if @rest
           tname = "#{target_name}_r"
           s, c, i = @rest.compile_internal(i, tname)
-          srcs << "(#{tname} = #{target_name}[#{@head.size}..-(#{@tail.size+1})];#{s})" if s
+          srcs << "#{tname} = #{target_name}[#{@head.size}..-(#{@tail.size+1})];#{s}" if s
           ctxs << c
         end
 
