@@ -471,6 +471,10 @@ module Patm
       "Rule{#{@rules.map(&:first).map(&:inspect).join(', ')}#{@else ? ', _' : ''}}"
     end
 
+    def compile_call(block, *args)
+      "call(#{args[0...block.arity].join(', ')})"
+    end
+
     def compile
       i = 0
       ctxs = []
@@ -479,12 +483,12 @@ module Patm
         s, c, i = pat.compile_internal(i, '_obj')
         ctxs << c
         ctxs << [block]
-        srcs << "if (#{s || 'true'})\n_ctx[#{i}].call(_match, _self)"
+        srcs << "if (#{s || 'true'})\n_ctx[#{i}].#{compile_call(block, "_match"," _self")}"
         i += 1
       end
       src = srcs.join("\nels")
       if @else
-        src << "\nelse\n_ctx[#{i}].call(_obj, _self)"
+        src << "\nelse\n_ctx[#{i}].#{compile_call(@else, "_obj"," _self")}"
         ctxs << [@else]
         i += 1
       end
