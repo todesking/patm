@@ -156,6 +156,7 @@ pattern_match  10.050000   0.070000  10.120000 ( 10.898683)
 ### 3.0.0
 
 - RuleCache is now obsoleted. Use DSL.
+- More optimized compiler
 
 ### 2.0.1
 
