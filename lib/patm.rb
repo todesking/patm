@@ -488,11 +488,14 @@ module Patm
       end
       src = srcs.join("\nels")
       if @else
-        src << "\nelse\n_ctx[#{i}].#{compile_call(@else, "_obj"," _self")}"
+        unless srcs.empty?
+          src << "\nelse\n"
+        end
+        src << "_ctx[#{i}].#{compile_call(@else, "_obj"," _self")}"
         ctxs << [@else]
         i += 1
       end
-      src << "\nend"
+      src << "\nend" unless srcs.empty?
       Compiled.new(
         src,
         ctxs.flatten(1)

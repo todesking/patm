@@ -156,6 +156,11 @@ describe Patm::Rule do
       it { should converts(nil, 100) }
       it { should converts([], nil) }
     end
+
+    rule(:reg2, ->(r) { r.else { nil }}) do
+      it { should converts(1, nil) }
+      it { should converts("hoge", nil) }
+    end
   end
 end
 

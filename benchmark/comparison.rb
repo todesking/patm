@@ -32,6 +32,28 @@ end
 load File.join(File.dirname(__FILE__), '../lib/patm.rb')
 require 'pattern-match'
 
+class Empty
+  extend Patm::DSL
+
+  def manual(obj)
+    nil
+  end
+
+  define_matcher :patm do|r|
+    r.else { nil }
+  end
+
+  def pattern_match(obj)
+    match(obj) do
+      with(_) { nil }
+    end
+  end
+
+  def test_values
+    [1, 2, 3]
+  end
+end
+
 class SimpleConst
   extend Patm::DSL
 
@@ -181,6 +203,7 @@ end
 puts "RUBY_VERSION: #{RUBY_VERSION}"
 puts
 
+benchmark Empty, 100000
 benchmark SimpleConst, 100000
 benchmark ArrayDecomposition, 10000
 benchmark VarArray, 10000
