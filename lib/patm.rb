@@ -483,7 +483,7 @@ module Patm
         s, c, i = pat.compile_internal(i, '_obj')
         ctxs << c
         ctxs << [block]
-        srcs << "if (#{s || 'true'})\n_ctx[#{i}].#{compile_call(block, "_match"," _self")}"
+        srcs << "if (#{s || 'true'})\n_ctx[#{i}].#{compile_call(block, "::Patm::Match.new(_match)"," _self")}"
         i += 1
       end
       src = srcs.join("\nels")
@@ -509,7 +509,7 @@ module Patm
         @src = <<-RUBY
         def apply(_obj, _self = nil)
           _ctx = @context
-          _match = ::Patm::Match.new
+          _match = {}
 #{@src_body}
         end
         RUBY
@@ -524,21 +524,21 @@ module Patm
   end
 
   class Match
-    def initialize
-      @group = {}
+    def initialize(data = {})
+      @data = data
     end
 
     def [](i)
-      @group[i]
+      @data[i]
     end
 
     def []=(i, val)
-      @group[i] = val
+      @data[i] = val
     end
 
     PREDEF_GROUP_SIZE.times.each do|i|
       define_method "_#{i}" do
-        self[i]
+        @data[i]
       end
     end
   end
@@ -570,7 +570,7 @@ module Patm
       def #{name}(_obj)
         _self = self
         _ctx = self.#{self.name ? 'class' : 'singleton_class'}.class_variable_get(:@@_patm_ctx_#{name})
-        _match = ::Patm::Match.new
+        _match = {}
 #{rule.src_body}
       end
       RUBY
