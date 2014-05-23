@@ -1,5 +1,9 @@
 # PATM: PATtern Matcher for Ruby
 
+PATM is extremely faster pattern match library.
+
+Features: Match value/classes, Capture, Array/Hash decomposition.
+
 ## Usage
 
 ```ruby
