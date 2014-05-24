@@ -84,6 +84,33 @@ rule.apply([:x, :y, :z])
 rule.apply([])
 # => nil
 ```
+
+## DSL
+
+```ruby
+class PatternMatcher
+  extend Patm::DSL
+
+  define_matcher(:match) do|r| # r is instance of Patm::Rule
+    # r.on( PATTERN ) {|match, _self|
+    #   First argument is instance of Patm::Match. Use it to access captured value.
+    #   ex. m._1, m._2, ..., m[capture_name]
+    #
+    #   Second argument is instance of the class. Use it to access other methods.
+    #   ex. _self.other_method
+    # }
+    #
+    # r.else {|value, _self|
+    #   First argument is the value. Second is instance of the class.
+    # }
+  end
+end
+
+matcher = PatternMatcher.new
+
+matcher.match(1)
+```
+
 ## Patterns
 
 ### Value
