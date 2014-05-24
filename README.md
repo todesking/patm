@@ -159,6 +159,7 @@ pattern_match  10.050000   0.070000  10.120000 ( 10.898683)
 
 ### 3.0.0
 
+- If given value can't match any pattern and no `else`, `Patm::NoMatchError` raised(Instead of return nil).
 - RuleCache is now obsoleted. Use DSL.
 - More optimized compiler
 

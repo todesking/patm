@@ -1,4 +1,11 @@
 module Patm
+  class NoMatchError < StandardError
+    def initialize(value)
+      super("Pattern not match: value=#{value.inspect}")
+      @value = value
+    end
+    attr_reader :value
+  end
   class Pattern
 
     def self.build_from(plain)
@@ -445,7 +452,7 @@ module Patm
     def initialize(&block)
       # [[Pattern, Proc]...]
       @rules = []
-      @else = ->(obj){nil}
+      @else = nil
       block[self]
     end
 
@@ -464,7 +471,7 @@ module Patm
           return block.call(match, _self)
         end
       end
-      @else[obj, _self]
+      @else ? @else[obj, _self] : (raise NoMatchError.new(obj))
     end
 
     def inspect
@@ -488,12 +495,13 @@ module Patm
       end
       src = srcs.join("\nels")
       if @else
-        unless srcs.empty?
-          src << "\nelse\n"
-        end
+        src << "\nelse\n" unless srcs.empty?
         src << "_ctx[#{i}].#{compile_call(@else, "_obj"," _self")}"
         ctxs << [@else]
         i += 1
+      else
+        src << "\nelse\n" unless srcs.empty?
+        src << "raise ::Patm::NoMatchError.new(_obj)"
       end
       src << "\nend" unless srcs.empty?
       Compiled.new(

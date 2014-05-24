@@ -143,6 +143,13 @@ describe Patm::Rule do
     it { should converts([1], []) }
   end
 
+  rule(:rule2, ->(r) {
+    r.on(1) { 100 }
+  }) do
+    it { should converts(1, 100) }
+    it { expect { subject.apply(nil) }.to raise_error(Patm::NoMatchError) }
+  end
+
   context 'regression' do
     rule(:reg1, ->(r){
       _1, _2 = Patm._1, Patm._2
