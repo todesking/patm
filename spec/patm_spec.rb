@@ -1,3 +1,9 @@
+require 'simplecov'
+require 'simplecov-vim/formatter'
+SimpleCov.start do
+  formatter SimpleCov::Formatter::VimFormatter
+end
+
 require File.join(File.dirname(__FILE__), '..', 'lib', 'patm.rb')
 require 'pry'
 

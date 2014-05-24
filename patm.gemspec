@@ -16,6 +16,8 @@ Gem::Specification.new do |s|
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   s.require_paths = ["lib"]
 
+  s.add_development_dependency('simplecov', '~> 0.7.1')
+  s.add_development_dependency('simplecov-vim')
   s.add_development_dependency('rspec', '~>2.14')
   s.add_development_dependency('pry', '~>0.9')
   s.add_development_dependency('pattern-match', '=0.5.1') # for benchmarking
