@@ -15,12 +15,7 @@ module Patm
       when ::Array
         build_from_array(plain)
       when ::Hash
-        Hash.new(
-          plain.each_with_object({}) do|(k, v), h|
-            h[k] = build_from(v) if k != Patm.exact
-          end,
-          plain[Patm.exact]
-        )
+        build_from_hash(plain)
       else
         Obj.new(plain)
       end
@@ -37,6 +32,15 @@ module Patm
       else
         Arr.new(array)
       end
+    end
+
+    def self.build_from_hash(plain)
+      self::Hash.new(
+        plain.each_with_object({}) do|(k, v), h|
+          h[k] = build_from(v) if k != Patm.exact
+        end,
+        plain[Patm.exact]
+      )
     end
 
     module Util
