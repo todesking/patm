@@ -234,26 +234,11 @@ module Patm
           srcs << "#{target_name}.size == #{size_min}"
         end
 
-        elm_target_name = "#{target_name}_elm"
-        @head.each_with_index do|h, hi|
-          if h.is_a?(Obj)
-            s, c, i = h.compile_internal(i, "#{target_name}[#{hi}]")
-            srcs << "#{s}" if s
-            ctxs << c
-          else
-            s, c, i = h.compile_internal(i, elm_target_name)
-            srcs << "#{elm_target_name} = #{target_name}[#{hi}]; #{s}" if s
-            ctxs << c
-          end
-        end
+        i = compile_part(target_name, @head, srcs, ctxs, i)
 
         unless @tail.empty?
           srcs << "#{target_name}_t = #{target_name}[(-#{@tail.size})..-1]; true"
-          @tail.each_with_index do|t, ti|
-            s, c, i = t.compile_internal(i, elm_target_name)
-            srcs << "#{elm_target_name} = #{target_name}_t[#{ti}]; #{s}" if s
-            ctxs << c
-          end
+          i = compile_part("#{target_name}_t", @tail, srcs, ctxs, i)
         end
 
         if @rest
@@ -269,6 +254,23 @@ module Patm
           i
         ]
       end
+
+      private
+        def compile_part(target_name, part, srcs, ctxs, i)
+          part.each_with_index do|h, hi|
+            if h.is_a?(Obj)
+              s, c, i = h.compile_internal(i, "#{target_name}[#{hi}]")
+              srcs << "#{s}" if s
+              ctxs << c
+            else
+              elm_target_name = "#{target_name}_elm"
+              s, c, i = h.compile_internal(i, elm_target_name)
+              srcs << "#{elm_target_name} = #{target_name}[#{hi}]; #{s}" if s
+              ctxs << c
+            end
+          end
+          i
+        end
     end
 
     class ArrRest < self
