@@ -355,7 +355,8 @@ module Patm
     end
 
     class LogicalOp < self
-      def initialize(pats, op_str)
+      def initialize(name, pats, op_str)
+        @name = name
         @pats = pats
         @op_str = op_str
       end
@@ -385,33 +386,30 @@ module Patm
       def opt?
         @pats.any?(&:opt?)
       end
+      def inspect
+        "#{@name}(#{@pats.map(&:inspect).join(',')})"
+      end
     end
 
     class Or < LogicalOp
       def initialize(pats)
-        super(pats, '||')
+        super('OR', pats, '||')
       end
       def execute(mmatch, obj)
         @pats.any? do|pat|
           pat.execute(mmatch, obj)
         end
       end
-      def inspect
-        "OR(#{@pats.map(&:inspect).join(',')})"
-      end
     end
 
     class And < LogicalOp
       def initialize(pats)
-        super(pats, '&&')
+        super('AND', pats, '&&')
       end
       def execute(mmatch, obj)
         @pats.all? do|pat|
           pat.execute(mmatch, obj)
         end
-      end
-      def inspect
-        "AND(#{@pats.map(&:inspect).join(',')})"
       end
     end
   end
