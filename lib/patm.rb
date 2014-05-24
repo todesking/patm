@@ -208,16 +208,24 @@ module Patm
       end
 
       def execute(mmatch, obj)
-        size_min = @head.size + @tail.size
         return false unless obj.is_a?(Array)
-        return false unless @rest ? (obj.size >= size_min) :  (obj.size == size_min)
-        @head.zip(obj[0..(@head.size - 1)]).all? {|pat, o|
+
+        size_min = @head.size + @tail.size
+        if @rest
+          return false if obj.size < size_min
+        else
+          return false if obj.size != size_min
+        end
+
+        return false unless @head.zip(obj[0..(@head.size - 1)]).all? {|pat, o|
           pat.execute(mmatch, o)
-        } &&
-        @tail.zip(obj[(-@tail.size)..-1]).all? {|pat, o|
+        }
+
+        return false unless @tail.zip(obj[(-@tail.size)..-1]).all? {|pat, o|
           pat.execute(mmatch, o)
-        } &&
-        (!@rest || @rest.execute(mmatch, obj[@head.size..-(@tail.size+1)]))
+        }
+
+        !@rest || @rest.execute(mmatch, obj[@head.size..-(@tail.size+1)])
       end
 
       def inspect
