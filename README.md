@@ -1,6 +1,7 @@
 # PATM: PATtern Matcher for Ruby
 
 [![Build Status](https://travis-ci.org/todesking/patm.svg?branch=master)](https://travis-ci.org/todesking/patm)
+[![Code Climate](https://codeclimate.com/github/todesking/patm.png)](https://codeclimate.com/github/todesking/patm)
 
 PATM is extremely faster pattern match library.
 
