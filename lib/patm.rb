@@ -243,12 +243,7 @@ module Patm
 
         srcs << "#{target_name}.is_a?(::Array)"
 
-        size_min = @head.size + @tail.size
-        if @rest
-          srcs << "#{target_name}.size >= #{size_min}"
-        else
-          srcs << "#{target_name}.size == #{size_min}"
-        end
+        i = compile_size_check(target_name, srcs, ctxs, i)
 
         i = compile_part(target_name, @head, srcs, ctxs, i)
 
@@ -257,12 +252,7 @@ module Patm
           i = compile_part("#{target_name}_t", @tail, srcs, ctxs, i)
         end
 
-        if @rest
-          tname = "#{target_name}_r"
-          s, c, i = @rest.compile_internal(i, tname)
-          srcs << "#{tname} = #{target_name}[#{@head.size}..-(#{@tail.size+1})];#{s}" if s
-          ctxs << c
-        end
+        i = compile_rest(target_name, srcs, ctxs, i)
 
         [
           srcs.compact.map{|s| "(#{s})"}.join(" &&\n"),
@@ -272,6 +262,16 @@ module Patm
       end
 
       private
+        def compile_size_check(target_name, srcs, ctxs, i)
+          size_min = @head.size + @tail.size
+          if @rest
+            srcs << "#{target_name}.size >= #{size_min}"
+          else
+            srcs << "#{target_name}.size == #{size_min}"
+          end
+          i
+        end
+
         def compile_part(target_name, part, srcs, ctxs, i)
           part.each_with_index do|h, hi|
             if h.is_a?(Obj)
@@ -285,6 +285,15 @@ module Patm
               ctxs << c
             end
           end
+          i
+        end
+
+        def compile_rest(target_name, srcs, ctxs, i)
+          return i unless @rest
+          tname = "#{target_name}_r"
+          s, c, i = @rest.compile_internal(i, tname)
+          srcs << "#{tname} = #{target_name}[#{@head.size}..-(#{@tail.size+1})];#{s}" if s
+          ctxs << c
           i
         end
     end
