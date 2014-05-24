@@ -1,5 +1,7 @@
 # PATM: PATtern Matcher for Ruby
 
+[![Build Status](https://travis-ci.org/todesking/patm.svg?branch=master)](https://travis-ci.org/todesking/patm)
+
 PATM is extremely faster pattern match library.
 
 Features: Match value/classes, Capture, Array/Hash decomposition.
