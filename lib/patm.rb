@@ -13,16 +13,7 @@ module Patm
       when Pattern
         plain
       when ::Array
-        array = plain.map{|a| build_from(a)}
-        rest_index = array.index(&:rest?)
-        if rest_index
-          head = array[0...rest_index]
-          rest = array[rest_index]
-          tail = array[(rest_index+1)..-1]
-          Arr.new(head, rest, tail)
-        else
-          Arr.new(array)
-        end
+        build_from_array(plain)
       when ::Hash
         Hash.new(
           plain.each_with_object({}) do|(k, v), h|
@@ -32,6 +23,19 @@ module Patm
         )
       else
         Obj.new(plain)
+      end
+    end
+
+    def self.build_from_array(plain)
+      array = plain.map{|a| build_from(a)}
+      rest_index = array.index(&:rest?)
+      if rest_index
+        head = array[0...rest_index]
+        rest = array[rest_index]
+        tail = array[(rest_index+1)..-1]
+        Arr.new(head, rest, tail)
+      else
+        Arr.new(array)
       end
     end
 
