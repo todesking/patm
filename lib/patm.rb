@@ -350,6 +350,40 @@ module Patm
       end
     end
 
+    class Struct < self
+      def initialize(klass, pat)
+        @klass, @pat = klass, pat
+      end
+
+      def execute(match, obj)
+        obj.is_a?(@klass) && @pat.all?{|k, v| v.execute(match, obj[k]) }
+      end
+
+      class Builder
+        def initialize(klass)
+          raise ArgumentError, "#{klass} is not Struct" unless klass.ancestors.include?(::Struct)
+          @klass = klass
+        end
+
+        # member_1_pat -> member_2_pat -> ... -> Pattern
+        # {member:Symbol => pattern} -> Pattern
+        def call(*args)
+          if args.size == 1 && args.first.is_a?(::Hash)
+            hash = args.first
+            hash.keys.each do|k|
+              raise ArgumentError, "#{k.inspect} is not member of #{@klass}" unless @klass.members.include?(k)
+            end
+            Struct.new(@klass, hash.each_with_object({}){|(k, plain), h|
+              h[k] = Pattern.build_from(plain)
+            })
+          else
+            raise ArgumentError, "Member size not match: expected #{@klass.members.size} but #{args.size}" unless args.size == @klass.members.size
+            Struct.new(@klass, ::Hash[*@klass.members.zip(args.map{|a| Pattern.build_from(a) }).flatten(1)])
+          end
+        end
+      end
+    end
+
     class Named < self
       def initialize(name)
         raise ::ArgumentError unless name.is_a?(Symbol) || name.is_a?(Numeric)
@@ -457,6 +491,10 @@ module Patm
   # Specify exact match or not.
   def self.exact
     EXACT
+  end
+
+  def self.[](struct_klass)
+    Pattern::Struct::Builder.new(struct_klass)
   end
 
   PREDEF_GROUP_SIZE = 100
