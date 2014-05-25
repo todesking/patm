@@ -118,6 +118,20 @@ matcher.match(1)
 
 Value patterns such as `1, :x, String, ...` matches if `pattern === target_value` is true.
 
+### Struct
+
+```ruby
+A = Struct.new(:x, :y)
+
+# ...
+define_matcher :match_struct do|r|
+  # use Patm[struct_class].( ... ) for match struct
+  # argument is a Hash(member_name => pattern) or patterns that correspond struct members.
+  r.on Patm[A].(x: 1, y: Patm._1) {|m| m._1 }
+  r.on Patm[A].(2, Patm._1) {|m| m._1 }
+end
+```
+
 ### Array
 
 `[1, 2, _any]` matches `[1, 2, 3]`, `[1, 2, :x]`, etc.
@@ -189,6 +203,10 @@ pattern_match  10.050000   0.070000  10.120000 ( 10.898683)
 
 
 ## Changes
+
+### 3.1.0
+
+- Struct matcher
 
 ### 3.0.0
 
