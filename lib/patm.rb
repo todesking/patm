@@ -355,8 +355,38 @@ module Patm
         @klass, @pat = klass, pat
       end
 
+      def inspect
+        "STRUCT(#{@klass.name || "<unnamed>"}, #{@pat.inspect})"
+      end
+
       def execute(match, obj)
         obj.is_a?(@klass) && @pat.all?{|k, v| v.execute(match, obj[k]) }
+      end
+
+      def compile_internal(free_index, target_name = "_obj")
+        srcs = []
+        ctxs = []
+        i = free_index
+
+        if @klass.name
+          srcs << "#{target_name}.is_a?(::#{@klass.name})"
+        else
+          srcs << "#{target_name}.is_a?(_ctx[#{i}])"
+          ctxs << [@klass]
+          i += 1
+        end
+
+        @pat.each do|(member, v)|
+          s, c, i = v.compile_internal(i, "#{target_name}_elm")
+          srcs << "#{target_name}_elm = #{target_name}.#{member}; #{s}" if s
+          ctxs << c
+        end
+
+        [
+          srcs.map{|s| "(#{s})"}.join(" &&\n"),
+          ctxs.flatten(1),
+          i
+        ]
       end
 
       class Builder
