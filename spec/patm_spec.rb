@@ -2,6 +2,7 @@ require 'simplecov'
 require 'simplecov-vim/formatter'
 SimpleCov.start do
   formatter SimpleCov::Formatter::VimFormatter
+  formatter SimpleCov::Formatter::HTMLFormatter
 end
 
 require File.join(File.dirname(__FILE__), '..', 'lib', 'patm.rb')
@@ -312,6 +313,12 @@ describe Patm::Pattern do
     it { should_not match_to(nil) }
     it { should_not match_to(Struct1.new(2, 2)) }
     it { should     match_to(Struct1.new(1, 2)).and_capture(2) }
+  end
+
+  unnamed_struct = Struct.new(:x, :y)
+  pattern(Patm[unnamed_struct].(x: 1, y: Patm._1)) do
+    it { should_not match_to(nil) }
+    it { should match_to(unnamed_struct.new(1, 2)).and_capture(2) }
   end
 
   context 'regression' do
